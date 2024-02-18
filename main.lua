@@ -3,6 +3,9 @@ io.stdout:setvbuf("no")
 -- Initialize variables
 local platform = {}
 
+local player = require('player')
+local projectiles = require('projectiles')
+
 function love.load(args)
     -- Set up the platform
     platform.width = love.graphics.getWidth()
@@ -10,18 +13,17 @@ function love.load(args)
     platform.x = 0
     platform.y = platform.height
 
-    -- Load the player image (replace 'path/to/your/playerImage.png' with the actual path)
-    playerImage = love.graphics.newImage('inevitable-brew.icon.png')
-
+    -- Load the player image
+    PlayerLuaImage = love.graphics.newImage(player.Props.imagePath)
     -- Set the player's initial position at the middle of the screen
-    player.x = love.graphics.getWidth() / 2
-    player.y = love.graphics.getHeight() / 2
+    player.Props.x = love.graphics.getWidth() / 2
+    player.Props.y = love.graphics.getHeight() / 2
 end
 
 function love.update(dt)
-    player.move(dt)
-    player.jump(dt)
-    projectiles.shoot(dt)
+    player.Move(dt)
+    player.Jump(dt)
+    projectiles.Shoot(dt, player.Props.x, player.Props.y)
 end
 
 function love.draw()
@@ -31,7 +33,7 @@ function love.draw()
 
     -- Draw the player
     love.graphics.setColor(0.6, 0.2, 0.8)
-    love.graphics.draw(playerImage, player.x, player.y)
+    love.graphics.draw(PlayerLuaImage, player.Props.x, player.Props.y)
 
-    projectiles.drawBullets()
+    projectiles.DrawBullets()
 end

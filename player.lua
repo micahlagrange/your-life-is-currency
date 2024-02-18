@@ -1,21 +1,24 @@
-local player {}
+module('player', package.seeall)
 
 -- Initialize player variables
-local player = {
+Props = {
     x = love.graphics.getWidth() / 2,
     y = love.graphics.getHeight() / 2,
-    yVelocity = 0,  -- Vertical velocity (initially zero)
-    onGround = true  -- Flag to check if the player is on the ground
+    -- Vertical velocity (initially zero)
+    yVelocity = 0,
+    -- Flag to check if the player is on the ground
+    onGround = true,
+    imagePath = 'inevitable-brew.icon.png'
 }
-local playerImage
 -- Set player jump strength (adjust as needed)
 local playerSpeed = 500
 local jumpStrength = 650
 -- Apply gravity (adjust gravity as needed)
 local gravity = 1600
 
-function player.move(dt)
-    local dx, dy = 0, 0  -- Initialize movement deltas
+function Move(dt)
+    -- Initialize movement deltas
+    local dx = 0
 
     -- Check keyboard input
     if love.keyboard.isDown('right') then
@@ -25,25 +28,25 @@ function player.move(dt)
     end
 
     -- Update player position based on deltas
-    player.x = player.x + dx * playerSpeed * dt
+    Props.x = Props.x + dx * playerSpeed * dt
 end
 
-function player.jump(dt)
+function Jump(dt)
     -- Handle player jumping
-    if love.keyboard.isDown('space') and player.onGround then
-        player.yVelocity = -jumpStrength
-        player.onGround = false
+    if love.keyboard.isDown('space') and Props.onGround then
+        Props.yVelocity = -jumpStrength
+        Props.onGround = false
     end
 
-    player.yVelocity = player.yVelocity + gravity * dt
+    Props.yVelocity = Props.yVelocity + gravity * dt
 
     -- Update player position
-    player.y = player.y + player.yVelocity * dt
+    Props.y = Props.y + Props.yVelocity * dt
 
     -- Check if player is back on the ground
-    if player.y >= love.graphics.getHeight() / 2 then
-        player.y = love.graphics.getHeight() / 2
-        player.yVelocity = 0
-        player.onGround = true
+    if Props.y >= love.graphics.getHeight() / 2 then
+        Props.y = love.graphics.getHeight() / 2
+        Props.yVelocity = 0
+        Props.onGround = true
     end
 end
