@@ -8,8 +8,14 @@ Props = {
     yVelocity = 0,
     -- Flag to check if the player is on the ground
     onGround = true,
-    imagePath = 'inevitable-brew.icon.png'
+    image = love.graphics.newImage('sprites/inevitable-brew.icon.png'),
+    scaleX = 1,
+    scaleY = 1,
+    width = 1,
+    height = 1,
+    facing = LEFT
 }
+
 -- Set player jump strength (adjust as needed)
 local playerSpeed = 500
 local jumpStrength = 650
@@ -23,8 +29,10 @@ function Move(dt)
     -- Check keyboard input
     if love.keyboard.isDown('right') then
         dx = 1
+        Props.facing = RIGHT
     elseif love.keyboard.isDown('left') then
         dx = -1
+        Props.facing = LEFT
     end
 
     -- Update player position based on deltas
@@ -49,4 +57,11 @@ function Jump(dt)
         Props.yVelocity = 0
         Props.onGround = true
     end
+end
+
+function SetDimensions(scaleX, scaleY)
+    Props.scaleX = scaleX
+    Props.scaleY = scaleY
+    Props.width = Props.image:getWidth() * scaleX
+    Props.height = Props.image:getHeight() * scaleY
 end

@@ -6,25 +6,55 @@ local bulletSpeed = 2000
 local bulletDelay = 0.5 -- Delay in seconds
 local bulletTimer = bulletDelay
 
-function Shoot(dt, x, y)
+
+-- Define the Projectile class
+Bullet = {}
+Bullet.__index = Bullet
+function Bullet.new(x, y, direction)
+    local self = setmetatable({}, Bullet)
+    self.x = x
+    self.y = y
+    self.direction = direction
+    self.state = 'flying'
+    return self
+end
+
+local function checkCollisionWithWall()
+    return false
+end
+
+function Shoot(dt, x, y, playerFacing)
     -- Decrease the timer
     bulletTimer = bulletTimer - dt
-
 
     -- Handle shooting (you can trigger this based on player input)
     if love.keyboard.isDown('lctrl') and bulletTimer <= 0 then
         -- Spawn a bullet at player's position
-        SpawnBullet(x, y)
+        SpawnBullet(x, y, playerFacing)
         -- reset timer
         bulletTimer = bulletDelay
     end
 
     -- Update existing bullets (move them forward)
+    local vel
     for i, bullet in ipairs(bullets) do
-        bullet.x = bullet.x + bulletSpeed * dt
-        -- Remove bullets that go off-screen
-        if bullet.x > love.graphics.getWidth() + 100 then
-            table.remove(bullets, i)
+        if bullet.state == 'flying' then
+            if bullet.direction == LEFT then
+                print('left')
+                vel = -bulletSpeed * dt
+            else
+                print('right')
+                vel = bulletSpeed * dt
+            end
+            bullet.x = bullet.x + vel
+            -- Remove bullets that go off-screen
+            if bullet.x > love.graphics.getWidth() + 100 then
+                table.remove(bullets, i)
+            end
+            -- Check for collision with a wall (you'll need to implement this)
+            if checkCollisionWithWall() then
+                bullet.state = 'stuck'
+            end
         end
     end
 end
@@ -39,6 +69,6 @@ function DrawBullets()
     end
 end
 
-function SpawnBullet(x, y)
-    table.insert(bullets, { x = x, y = y })
+function SpawnBullet(x, y, direction)
+    table.insert(bullets, Bullet.new(x, y, direction))
 end
