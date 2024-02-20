@@ -40,10 +40,8 @@ function Shoot(dt, x, y, playerFacing)
     for i, bullet in ipairs(bullets) do
         if bullet.state == 'flying' then
             if bullet.direction == LEFT then
-                print('left')
                 vel = -bulletSpeed * dt
             else
-                print('right')
                 vel = bulletSpeed * dt
             end
             bullet.x = bullet.x + vel
