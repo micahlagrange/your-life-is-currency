@@ -1,6 +1,6 @@
-[submodule "Simple-Tiled-Implementation"]
-	path = vendor/Simple-Tiled-Implementation
-	url = https://github.com/karai17/Simple-Tiled-Implementation.git
 [submodule "vendor/hump"]
 	path = vendor/hump
 	url = https://github.com/vrld/hump
+[submodule "vendor/Simple-Tiled-Implementation.git"]
+	path = vendor/Simple-Tiled-Implementation.git
+	url = https://github.com/karai17/Simple-Tiled-Implementation.git
