@@ -13,7 +13,8 @@ Props = {
     scaleY = 1,
     width = 1,
     height = 1,
-    facing = LEFT
+    facing = LEFT,
+    collider = nil
 }
 
 -- Set player jump strength (adjust as needed)
@@ -21,6 +22,16 @@ local playerSpeed = 500
 local jumpStrength = 650
 -- Apply gravity (adjust gravity as needed)
 local gravity = 1600
+
+function Draw()
+    love.graphics.draw(
+        Props.image,
+        Props.x,
+        Props.y - Props.height,
+        0,
+        Props.scaleX,
+        Props.scaleY)
+end
 
 function Move(dt)
     -- Initialize movement deltas
@@ -59,9 +70,10 @@ function Jump(dt)
     end
 end
 
-function SetDimensions(scaleX, scaleY)
+function InitPlayer(scaleX, scaleY, rectCollider)
     Props.scaleX = scaleX
     Props.scaleY = scaleY
     Props.width = Props.image:getWidth() * scaleX
     Props.height = Props.image:getHeight() * scaleY
+    Props.collider = rectCollider
 end

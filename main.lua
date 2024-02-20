@@ -10,20 +10,28 @@ RIGHT = 1
 function love.load(args)
     -- load dependencies
     -- submodule Simple-Tiled-Implementation
-    Sti = require('vendor/Simple-Tiled-Implementation/sti')
-    Hump = require('vendor/hump/camera')
-    Camera = Hump()
+    local sti = require('vendor/Simple-Tiled-Implementation/sti')
+    local hump = require('vendor/hump/camera')
+    local wf = require('vendor/windfield')
+
+    -- game maps/tiles
+    GameMap = sti('tilemaps/testMap.lua')
+    Camera = hump()
+    World = wf.newWorld()
 
     -- Set the player's initial position at the middle of the screen
     player.Props.x = love.graphics.getWidth() / 2
     player.Props.y = love.graphics.getHeight() / 3
-    player.SetDimensions(.5, .5)
-
-    -- game maps/tiles
-    GameMap = Sti('tilemaps/testMap.lua')
+    player.InitPlayer(.5, .5,
+        World:newRectangleCollider(
+            player.Props.x,
+            player.Props.y,
+            player.Props.width,
+            player.Props.height))
 end
 
 function love.update(dt)
+    World:update()
     player.Move(dt)
     player.Jump(dt)
     projectiles.Shoot(dt,
@@ -39,6 +47,7 @@ function love.update(dt)
 end
 
 function love.draw()
+    World:draw()
     Camera:attach()
     --sky blue
     love.graphics.setColor(0.52, 0.80, 0.92)
@@ -53,14 +62,7 @@ function love.draw()
     GameMap:drawLayer(GameMap.layers['Platforms'])
 
     -- Draw the player
-    love.graphics.draw(
-        player.Props.image,
-        player.Props.x,
-        player.Props.y - player.Props.height,
-        0,
-        player.Props.scaleX,
-        player.Props.scaleY)
-
+    player.Draw()
     projectiles.DrawBullets()
     Camera:detach()
 
