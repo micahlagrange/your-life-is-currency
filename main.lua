@@ -17,20 +17,30 @@ function love.load(args)
     local wf = require('vendor/windfield/windfield')
 
     -- game maps/tiles
-    GameMap = sti('tilemaps/testMap.lua')
+    GameMap = sti('tilemaps/pipes.lu.lua')
     Camera = hump()
+    Camera:zoomTo(2)
     World = wf.newWorld(0, GRAVITY)
 
     World:addCollisionClass('Platform')
-    World:addCollisionClass('Player')
+    World:addCollisionClass('Wall')
+    World:addCollisionClass('Bullet', { ignores = { 'Platform' } })
+    World:addCollisionClass('Player', { ignores = { 'Bullet' } })
+    World:addCollisionClass('Ghost', {
+        ignores = {
+            'Platform',
+            'Player',
+            'Bullet' }
+    })
 
     -- Set the player's initial position at the middle of the screen
     player.Props.x = love.graphics.getWidth() / 2
     player.Props.y = love.graphics.getHeight() / 3
-    player.InitPlayer(.3, .3)
+    player.InitPlayer(1.9, 1.9)
 
-    -- make walls
+    -- make walls and platforms
     walls.GenerateWalls()
+    walls.GeneratePlatforms()
 end
 
 function love.update(dt)
@@ -39,9 +49,11 @@ function love.update(dt)
     player.Jump()
     projectiles.Shoot(dt,
         player.Props.x,
-        player.Props.y - player.Props.height / 2,
-        player.Props.facing
+        player.Props.y - (player.Props.height / 2),
+        player.Props.facing,
+        player.Props.width
     )
+    projectiles.Update(dt)
 
     -- lerp cam to player
     Camera:lookAt(
@@ -67,6 +79,9 @@ function love.draw()
     -- Draw the player
     player.Draw()
     projectiles.DrawBullets()
+
+    love.graphics.setColor(1, 1, 1)
+    GameMap:drawLayer(GameMap.layers['Foreground'])
     Camera:detach()
 
     love.graphics.print("hello", 10, 10)

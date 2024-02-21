@@ -1,5 +1,7 @@
 module('player', package.seeall)
 
+local spritesheet = require('spritesheet')
+
 -- Initialize player variables
 Props = {
     x = love.graphics.getWidth() / 2,
@@ -7,29 +9,70 @@ Props = {
     -- Vertical velocity (initially zero)
     yVelocity = 0,
     -- Flag to check if the player is on the ground
-    image = love.graphics.newImage('sprites/inevitable-brew.icon.png'),
+    imagePath = 'sprites/ice-dragon-spritesheet.png',
     scaleX = 1,
     scaleY = 1,
     width = 1,
     height = 1,
     onGround = false,
     facing = LEFT,
-    collider = nil
+    collider = nil,
+    quads = nil,
+    image = nil,
+    currentSprite = 1
 }
 
 -- Set player jump strength (adjust as needed)
-PLAYER_SPEED = 6000
-JUMP_STRENGTH = 1500
-MAX_SPEED = 400
+PLAYER_SPEED = 8000
+JUMP_STRENGTH = 4900
+MAX_SPEED = 600
+
+local function preSolve(playerc, wallc, contact)
+    if playerc.collision_class == 'Player'
+        and
+        wallc.collision_class == 'Platform'
+    then
+        local wallObj = wallc:getObject()
+        local px, py = playerc:getPosition()
+        local pw, ph = Props.width, Props.height
+        local tx, ty = wallc:getPosition()
+        local tw, th = wallObj.width, wallObj.height
+        if py + ph / 2 > ty - th / 2 then
+            contact:setEnabled(false)
+        else
+            Props.onGround = true
+        end
+    end
+end
 
 function Draw()
+    local scaleX
+    if Props.facing == RIGHT then
+        scaleX = Props.scaleX
+    else
+        -- players origin is their left side, so when the image
+        -- flips we need to push them right
+        Props.x = Props.x + Props.width
+        scaleX = -Props.scaleX
+    end
+
     love.graphics.draw(
         Props.image,
+        Props.quads[Props.currentSprite],
         Props.x - Props.width / 2,
         Props.y - Props.height / 2,
         0,
-        Props.scaleX,
+        scaleX,
         Props.scaleY)
+end
+
+function Face(direction)
+    Props.facing = direction
+    if direction == LEFT then
+        Props.currentSprite = 1
+    else
+        Props.currentSprite = 2
+    end
 end
 
 function Move()
@@ -38,10 +81,10 @@ function Move()
     -- Check keyboard input
     if love.keyboard.isDown('right') and px < MAX_SPEED then
         Props.collider:applyForce(PLAYER_SPEED, 0)
-        Props.facing = RIGHT
+        Face(RIGHT)
     elseif love.keyboard.isDown('left') and px > -MAX_SPEED then
         Props.collider:applyForce(-PLAYER_SPEED, 0)
-        Props.facing = LEFT
+        Face(LEFT)
     end
 
     -- Update player position based on deltas
@@ -49,8 +92,8 @@ function Move()
 end
 
 function Jump()
-    if Props.collider:enter('Platform') then
-        local collided = Props.collider:getEnterCollisionData('Platform')
+    if Props.collider:enter('Wall') then
+        local collided = Props.collider:getEnterCollisionData('Wall')
         local platform = collided.collider
 
         if Props.y + Props.height / 2 < platform:getY() then
@@ -58,31 +101,31 @@ function Jump()
         end
     end
     if love.keyboard.isDown('space') and Props.onGround then
-        Props.collider:applyLinearImpulse(0, -JUMP_STRENGTH)
         Props.onGround = false
+        local vx, vy = Props.collider:getLinearVelocity()
+        Props.collider:setLinearVelocity(vx, 0)
+        Props.collider:applyLinearImpulse(0, -JUMP_STRENGTH)
     end
 end
 
 function InitPlayer(scaleX, scaleY)
+    local playerWidth = 32  -- actual number of pixels wide for each sprite in the sprite sheet
+    local playerHeight = 32 -- actual number of pixels high for each sprite in the sprite sheet
     Props.scaleX = scaleX
     Props.scaleY = scaleY
-    Props.width = Props.image:getWidth() * scaleX
-    Props.height = Props.image:getHeight() * scaleY
+    Props.width = playerWidth * scaleX
+    Props.height = playerWidth * scaleY
     Props.collider = World:newBSGRectangleCollider(
         player.Props.x,
         player.Props.y,
         player.Props.width,
         player.Props.height,
-        10)
+        5)
     Props.collider:setCollisionClass('Player')
     Props.collider:setFixedRotation(true)
-
-    -- local function custom_collision(collider_1, collider_2, contact)
-    --     print(collider_1.collision_class, collider_2.collision_class)
-    --     if collider_1.collision_class == 'Player' and collider_2.collision_class == 'Platform' then
-    --         Props.onGround = true
-    --     end
-    -- end
-
-    -- Props.collider:setPreSolve(custom_collision)
+    Props.collider:setPreSolve(preSolve)
+    Props.image = love.graphics.newImage(Props.imagePath)
+    Props.image:setFilter('nearest', 'nearest')
+    Props.quads = spritesheet.SpriteSheetToQuads(Props.image, playerWidth, playerHeight)
+    Face(RIGHT)
 end
