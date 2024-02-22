@@ -12,11 +12,6 @@ local theWastelandOfDeadGarbage = -9999
 
 local the3DPyramidThingImage = love.graphics.newImage('sprites/pickup1.png')
 
-local function getId(t)
-    local addr = string.format("%p", t)
-    return string.sub(addr, 5, 12)
-end
-
 local function findIndexForPickableID(name)
     --return 0 if none found
     for idx, p in ipairs(pickups) do
@@ -75,10 +70,16 @@ function Pickup(collider)
 end
 
 function GeneratePickables()
+    local counter = 0
+    local function getUniqueID()
+        counter = counter + 1
+        return counter
+    end
+
     if GameMap.layers[OBJECT_LAYER_PICKABLES] then
         for _, obj in pairs(GameMap.layers[OBJECT_LAYER_PICKABLES].objects) do
             local pickup = {}
-            pickup.pkguid = getId(pickup)
+            pickup.pkguid = getUniqueID()
             print('  -- generate pickup ', pickup.pkguid)
             pickup.collider = World:newRectangleCollider(
                 obj.x - 32,
