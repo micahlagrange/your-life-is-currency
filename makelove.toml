@@ -1,4 +1,4 @@
-name = "2024-winter-game-jam"
+name = "drakeshot"
 default_targets = ["macos", "appimage", "win64", "lovejs"]
 build_directory = "makelove-build"
 
@@ -18,8 +18,8 @@ memory = "200000000"  # starting memory of the webpage (default is 20 MB)
 #icon_file = "macIcon.png"  # or macIcon.icns
 
 [macos.app_metadata]
-CFBundleName = "2024 Winter Game Jam"
-CFBundleIdentifier = "dev.micahturner.2024wintergamejam"
+CFBundleName = "Drakeshot"
+CFBundleIdentifier = "dev.micahturner.drakeshot"
 NSHumanReadableCopyright = "Copyright © 2024 Micah Turner"
 CFBundleShortVersionString = "0.0.1"
 
@@ -30,4 +30,4 @@ CompanyName = "Micah Turner" # "LÖVE World Domination Inc."
 LegalCopyright = "Copyright © 2024 Micah Turner"
 ProductName = "{name}" # "LÖVE"
 ProductVersion = "{version}"
-OriginalFilename = "micah-winter-2024.exe" # "love.exe"
+OriginalFilename = "drakeshot.exe" # "love.exe"
