@@ -16,9 +16,9 @@ LAYER_FOREGROUND = 'Foreground'
 function love.load(args)
     -- load dependencies
     -- submodule Simple-Tiled-Implementation
-    local sti = require('vendor/Simple-Tiled-Implementation/sti')
-    local hump = require('vendor/hump/camera')
-    local wf = require('vendor/windfield/windfield')
+    local hump = require('libs/camera')
+    local sti = require('libs/sti')
+    local wf = require('libs/windfield')
 
     -- game maps/tiles
     GameMap = sti('tilemaps/toGoUpGoDown.lua')
