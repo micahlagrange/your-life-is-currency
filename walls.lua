@@ -20,11 +20,11 @@ end
 function GeneratePlatforms()
     if GameMap.layers[OBJECT_LAYER_PLATFORMS] then
         for i, obj in pairs(GameMap.layers[OBJECT_LAYER_PLATFORMS].objects) do
-        local platform = World:newRectangleCollider(obj.x, obj.y, obj.width, obj.height)
-        platform:setType('static')
-        platform:setCollisionClass('Platform')
-        platform:setObject(obj)
-        table.insert(platforms, platform)
+            local platform = World:newRectangleCollider(obj.x, obj.y, obj.width, obj.height)
+            platform:setType('static')
+            platform:setCollisionClass('Platform')
+            platform:setObject(obj)
+            table.insert(platforms, platform)
         end
     end
 end
