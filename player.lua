@@ -4,8 +4,8 @@ local spritesheet = require('spritesheet')
 
 -- Initialize player variables
 Props = {
-    x = love.graphics.getWidth() / 2,
-    y = love.graphics.getHeight() / 2,
+    x = 0,
+    y = 0,
     -- Vertical velocity (initially zero)
     yVelocity = 0,
     -- Flag to check if the player is on the ground
@@ -26,6 +26,7 @@ Props = {
 PLAYER_SPEED = 8000
 JUMP_STRENGTH = 4900
 MAX_SPEED = 600
+PLAYER_START = 'PlayerStart'
 
 local function preSolve(playerc, wallc, contact)
     if playerc.collision_class == 'Player'
@@ -128,4 +129,15 @@ function InitPlayer(scaleX, scaleY)
     Props.image:setFilter('nearest', 'nearest')
     Props.quads = spritesheet.SpriteSheetToQuads(Props.image, playerWidth, playerHeight)
     Face(RIGHT)
+
+    if GameMap.layers[PLAYER_START] then
+        for _, obj in pairs(GameMap.layers[PLAYER_START].objects) do
+            Props.x = obj.x
+            Props.y = obj.y
+            Props.collider:setX(obj.x)
+            Props.collider:setY(obj.y)
+            print('start at ', Props.x, Props.y)
+            return
+        end
+    end
 end

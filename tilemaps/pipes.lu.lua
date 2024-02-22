@@ -9,8 +9,8 @@ return {
   height = 60,
   tilewidth = 32,
   tileheight = 32,
-  nextlayerid = 7,
-  nextobjectid = 37,
+  nextlayerid = 8,
+  nextobjectid = 42,
   properties = {},
   tilesets = {
     {
@@ -80,7 +80,7 @@ return {
       width = 100,
       height = 60,
       id = 1,
-      name = "Ground",
+      name = "Background",
       class = "",
       visible = true,
       opacity = 1,
@@ -160,7 +160,7 @@ return {
       width = 100,
       height = 60,
       id = 2,
-      name = "Platforms",
+      name = "Player",
       class = "",
       visible = true,
       opacity = 1,
@@ -560,6 +560,35 @@ return {
           y = 0,
           width = 32,
           height = 736,
+          rotation = 0,
+          visible = true,
+          properties = {}
+        }
+      }
+    },
+    {
+      type = "objectgroup",
+      draworder = "topdown",
+      id = 7,
+      name = "PlayerStart",
+      class = "",
+      visible = true,
+      opacity = 1,
+      offsetx = 0,
+      offsety = 0,
+      parallaxx = 1,
+      parallaxy = 1,
+      properties = {},
+      objects = {
+        {
+          id = 41,
+          name = "",
+          type = "",
+          shape = "point",
+          x = 192,
+          y = 640,
+          width = 0,
+          height = 0,
           rotation = 0,
           visible = true,
           properties = {}

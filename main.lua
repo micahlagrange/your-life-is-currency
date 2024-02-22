@@ -9,6 +9,10 @@ LEFT = 0
 RIGHT = 1
 GRAVITY = 1600
 
+LAYER_BG = 'Background'
+LAYER_PLAYER = 'Player'
+LAYER_FOREGROUND = 'Foreground'
+
 function love.load(args)
     -- load dependencies
     -- submodule Simple-Tiled-Implementation
@@ -17,7 +21,8 @@ function love.load(args)
     local wf = require('vendor/windfield/windfield')
 
     -- game maps/tiles
-    GameMap = sti('tilemaps/pipes.lu.lua')
+    GameMap = sti('tilemaps/toGoUpGoDown.lua')
+    -- GameMap = sti('tilemaps/pipes.lu.lua')
     Camera = hump()
     Camera:zoomTo(2)
     World = wf.newWorld(0, GRAVITY)
@@ -72,8 +77,8 @@ function love.draw()
     Camera:attach()
     -- reset color, Draw the tilemap
     love.graphics.setColor(1, 1, 1)
-    GameMap:drawLayer(GameMap.layers['Ground'])
-    GameMap:drawLayer(GameMap.layers['Platforms'])
+    GameMap:drawLayer(GameMap.layers[LAYER_BG])
+    GameMap:drawLayer(GameMap.layers[LAYER_PLAYER])
 
     -- World:draw()
     -- Draw the player
@@ -81,7 +86,7 @@ function love.draw()
     projectiles.DrawBullets()
 
     love.graphics.setColor(1, 1, 1)
-    GameMap:drawLayer(GameMap.layers['Foreground'])
+    GameMap:drawLayer(GameMap.layers[LAYER_FOREGROUND])
     Camera:detach()
 
     love.graphics.print("hello", 10, 10)
