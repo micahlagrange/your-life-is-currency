@@ -75,7 +75,7 @@ end
 local function iceMelt(dt)
     -- clean up static spikes
     for i, spike in ipairs(bullets) do
-        if spike.state == 'static' then
+        if spike.state == 'stuck' then
             spike.meltTimer = spike.meltTimer - dt
             if spike.meltTimer <= 0 then
                 MeltBullet(spike, i)
