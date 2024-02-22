@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="100" height="60" tilewidth="32" tileheight="32" infinite="0" nextlayerid="8" nextobjectid="42">
+<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="100" height="60" tilewidth="32" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="43">
  <editorsettings>
   <export target="pipes.lu.lua" format="lua"/>
  </editorsettings>
@@ -223,7 +223,12 @@
   <object id="13" x="-32" y="0" width="32" height="736"/>
  </objectgroup>
  <objectgroup id="7" name="PlayerStart">
-  <object id="41" x="192" y="640">
+  <object id="41" name="start" x="192" y="640">
+   <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="8" name="Pickables">
+  <object id="42" name="pickup1" x="1152" y="640">
    <point/>
   </object>
  </objectgroup>

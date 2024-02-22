@@ -1,6 +1,7 @@
 module('player', package.seeall)
 
 local spritesheet = require('spritesheet')
+local pickable = require('pickable')
 
 -- Initialize player variables
 Props = {
@@ -90,6 +91,12 @@ function Move()
 
     -- Update player position based on deltas
     Props.x, Props.y = Props.collider:getX(), Props.collider:getY()
+
+    if Props.collider:enter('Pickable') then
+        local collided = Props.collider:getEnterCollisionData('Pickable')
+        local pickup = collided.collider
+        pickable.Pickup(pickup)
+    end
 end
 
 function Jump()
@@ -116,6 +123,7 @@ function InitPlayer(scaleX, scaleY)
     Props.scaleY = scaleY
     Props.width = playerWidth * scaleX
     Props.height = playerWidth * scaleY
+
     Props.collider = World:newBSGRectangleCollider(
         player.Props.x,
         player.Props.y,
@@ -126,7 +134,6 @@ function InitPlayer(scaleX, scaleY)
     Props.collider:setFixedRotation(true)
     Props.collider:setPreSolve(preSolve)
     Props.image = love.graphics.newImage(Props.imagePath)
-    Props.image:setFilter('nearest', 'nearest')
     Props.quads = spritesheet.SpriteSheetToQuads(Props.image, playerWidth, playerHeight)
     Face(RIGHT)
 

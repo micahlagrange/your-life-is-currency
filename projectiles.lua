@@ -47,6 +47,7 @@ local function checkCollisionWithWall(bullet, idx)
         bullet.collider:setType('static')
         bullet.collider:setCollisionClass('Platform')
         bullet.meltTimer = meltDelay
+        SFX.IceSpikeLand:play()
     end
 end
 
@@ -91,7 +92,7 @@ local function cleanUpBullets(dt)
 
     local colliders = World:queryCircleArea(theWastelandOfDeadBullets, theWastelandOfDeadBullets, 300)
     for _, collider in ipairs(colliders) do
-        print('delete collider ', collider.id)
+        print('delete bullet collider ', collider.id)
         print(pcall(function() collider:destroy() end))
     end
     cleanTimer = cleanDelay
@@ -134,6 +135,7 @@ function Shoot(dt, x, y, playerFacing)
     -- Handle shooting (you can trigger this based on player input)
     if love.keyboard.isDown('lctrl') and shootTimer <= 0 then
         -- Spawn a bullet at player's position
+        SFX.ShootProjectile:play()
         SpawnBullet(x, y + 30, playerFacing)
         -- reset timer
         shootTimer = shootDelay

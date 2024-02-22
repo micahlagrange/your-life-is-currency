@@ -1,9 +1,10 @@
-io.stdout:setvbuf("no")
+love.graphics.setDefaultFilter("nearest", "nearest")
 
 -- Initialize variables
 local player = require('player')
 local projectiles = require('projectiles')
 local walls = require('walls')
+local pickable = require('pickable')
 
 LEFT = 0
 RIGHT = 1
@@ -28,6 +29,7 @@ function love.load(args)
     World = wf.newWorld(0, GRAVITY)
 
     World:addCollisionClass('Platform')
+    World:addCollisionClass('Pickable')
     World:addCollisionClass('Wall')
     World:addCollisionClass('Bullet', { ignores = { 'Platform' } })
     World:addCollisionClass('Player', { ignores = { 'Bullet' } })
@@ -46,6 +48,10 @@ function love.load(args)
     -- make walls and platforms
     walls.GenerateWalls()
     walls.GeneratePlatforms()
+    pickable.GeneratePickables()
+
+    SFX = require('audio')
+
 end
 
 function love.update(dt)
@@ -60,10 +66,13 @@ function love.update(dt)
     )
     projectiles.Update(dt)
 
-    -- lerp cam to player
+    -- TODO: lerp cam to player
     Camera:lookAt(
         player.Props.x + player.Props.width / 2,
         player.Props.y - player.Props.height / 2)
+
+    -- pickables
+    pickable.Update(dt)
 end
 
 function love.draw()
@@ -87,6 +96,9 @@ function love.draw()
 
     love.graphics.setColor(1, 1, 1)
     GameMap:drawLayer(GameMap.layers[LAYER_FOREGROUND])
+
+    -- pickable
+    pickable.Draw()
     Camera:detach()
 
     love.graphics.print("hello", 10, 10)
