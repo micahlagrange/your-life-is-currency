@@ -62,6 +62,7 @@ function love.load(args)
     enemy.GenerateEnemies()
 
     SFX = require('audio')
+    SFX.DrWeeb:setLooping(true)
     SFX.DrWeeb:play()
 end
 
