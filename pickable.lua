@@ -67,6 +67,7 @@ function Pickup(collider)
     table.insert(INVENTORY, pickup)
     deletePickable(pickup, pickup.pkguid)
     SFX.ItemGet:play()
+    player.Props.gil = player.Props.gil + 1
 end
 
 function GeneratePickables()

@@ -23,6 +23,7 @@ function love.load(args)
     local hump = require('libs/camera')
     local sti = require('libs/sti')
     local wf = require('libs/windfield')
+    Anim8 = require('libs/anim8')
 
     -- game maps/tiles
     GameMap = sti('tilemaps/toGoUpGoDown.lua')
@@ -43,11 +44,13 @@ function love.load(args)
             'Player',
             'Bullet' }
     })
+    World:addCollisionClass('END')
 
+    local goal, goalx, goaly = walls.GenerateGoal()
     -- Set the player's initial position at the middle of the screen
     player.Props.x = love.graphics.getWidth() / 2
     player.Props.y = love.graphics.getHeight() / 3
-    player.InitPlayer(PLAYER_SCALE, PLAYER_SCALE)
+    player.InitPlayer(PLAYER_SCALE, PLAYER_SCALE, goal, goalx, goaly)
 
     -- make walls and platforms
     walls.GenerateWalls()
@@ -56,18 +59,19 @@ function love.load(args)
     enemy.GenerateEnemies()
 
     SFX = require('audio')
+    SFX.DrWeeb:play()
 end
 
 function love.update(dt)
     World:update(dt)
     enemy.UpdateEnemies(dt)
-    player.Move(dt)
+    player.UpdatePlayer(dt)
     player.Jump()
     projectiles.Shoot(dt,
         player.Props.x,
         player.Props.y - (player.Props.height / 2),
         player.Props.facing,
-        player.Props.width
+        player.Props.dead
     )
     projectiles.Update(dt)
 
@@ -94,7 +98,7 @@ function love.draw()
     GameMap:drawLayer(GameMap.layers[LAYER_BG])
     GameMap:drawLayer(GameMap.layers[LAYER_PLAYER])
 
-    World:draw()
+    -- World:draw()
     -- Draw the player
     enemy.DrawEnemies()
     player.Draw()
@@ -107,5 +111,12 @@ function love.draw()
     pickable.Draw()
     Camera:detach()
 
-    love.graphics.print("hello", 10, 10)
+    love.graphics.print("HP: " .. player.Props.hp, 10, 10)
+    love.graphics.print("GIL: " .. player.Props.gil, 10, 30)
+
+    if player.Props.win then
+        love.graphics.print("WIN", 300, 300)
+    elseif player.Props.dead then
+        love.graphics.print("DED", 300, 300)
+    end
 end

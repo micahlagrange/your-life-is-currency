@@ -128,7 +128,9 @@ function MeltBullet(bullet, idx)
     DeleteBullet(bullet, idx)
 end
 
-function Shoot(dt, x, y, playerFacing)
+function Shoot(dt, x, y, playerFacing, playerDead)
+    if playerDead then return end
+
     -- Decrease the timer
     shootTimer = shootTimer - dt
 

@@ -28,3 +28,16 @@ function GeneratePlatforms()
         end
     end
 end
+
+function GenerateGoal()
+    if GameMap.layers['END'] then
+        for i, obj in pairs(GameMap.layers['END'].objects) do
+            local goal = World:newRectangleCollider(obj.x, obj.y, obj.width, obj.height)
+            goal:setType('static')
+            goal:setCollisionClass('END')
+            goal:setX(-99999)
+            goal:setY(-99999)
+            return goal, obj.x, obj.y
+        end
+    end
+end

@@ -29,3 +29,12 @@ function SpriteSheetToQuads(spritesheet, spriteWidth, spriteHeight)
 
     return quads
 end
+
+function NewAnim8Grid(spriteSheet, w, h)
+    return Anim8.newGrid(
+        w,
+        h,
+        spriteSheet:getWidth(),
+        spriteSheet:getHeight()
+    )
+end

@@ -10,7 +10,7 @@ Props = {
     -- Vertical velocity (initially zero)
     yVelocity = 0,
     -- Flag to check if the player is on the ground
-    imagePath = 'sprites/ice-dragon-spritesheet.png',
+    imagePath = 'sprites/icedragon-anims-lg.png',
     scaleX = 1,
     scaleY = 1,
     width = 1,
@@ -20,7 +20,10 @@ Props = {
     collider = nil,
     quads = nil,
     image = nil,
-    currentSprite = 1
+    currentSprite = 1,
+    hp = 2,
+    gil = 0,
+    dead = false
 }
 
 -- Set player jump strength (adjust as needed)
@@ -28,6 +31,7 @@ PLAYER_SPEED = 8000
 JUMP_STRENGTH = 4900
 MAX_SPEED = 600
 PLAYER_START = 'PlayerStart'
+WIN_CONDITION = 3
 
 local function preSolve(playerc, wallc, contact)
     if playerc.collision_class == 'Player'
@@ -58,9 +62,8 @@ function Draw()
         scaleX = -Props.scaleX
     end
 
-    love.graphics.draw(
+    Props.currentAnim8:draw(
         Props.image,
-        Props.quads[Props.currentSprite],
         Props.x - Props.width / 2,
         Props.y - Props.height / 2,
         0,
@@ -77,8 +80,48 @@ function Face(direction)
     end
 end
 
-function Move()
+local function resetAnim()
+    Props.currentAnim8 = Props.animations.idle
+end
+
+local function chooseConstantAnimation(velocity)
+    if Props.currentAnim8 ~= Props.animations.walk
+        and Props.currentAnim8 ~= Props.animations.idle then
+        return
+    end
+    if velocity == 0 then
+        Props.currentAnim8 = Props.animations.idle
+    else
+        Props.currentAnim8 = Props.animations.walk
+    end
+end
+
+local function hurt()
+    local ec = Props.collider:getEnterCollisionData('Enemy')
+    ec.collider:getObject():attak(Props)
+    if Props.currentAnim8 == Props.animations.hurt then return end
+    print('oof')
+    Props.currentAnim8 = Props.animations.hurt
+    Props.hp = Props.hp - 1
+    if Props.hp <= 0 then
+        Props.dead = true
+        Props.currentAnim8 = Props.animations.ded
+    end
+end
+
+function UpdatePlayer(dt)
     local px = Props.collider:getLinearVelocity()
+
+    -- anim
+    chooseConstantAnimation(px)
+    Props.currentAnim8:update(dt)
+
+    if Props.dead or Props.win then return end
+
+    -- damage
+    if Props.collider:enter('Enemy') then
+        hurt()
+    end
 
     -- Check keyboard input
     if love.keyboard.isDown('right') and px < MAX_SPEED then
@@ -96,6 +139,16 @@ function Move()
         local collided = Props.collider:getEnterCollisionData('Pickable')
         local pickup = collided.collider
         pickable.Pickup(pickup)
+        if Props.gil >= WIN_CONDITION then
+            print(Props.goal:getX())
+            Props.goal:setX(Props.goalx)
+            Props.goal:setY(Props.goaly)
+            print(Props.goal:getX())
+        end
+    end
+
+    if Props.collider:enter('END') then
+        Props.win = true
     end
 end
 
@@ -116,9 +169,10 @@ function Jump()
     end
 end
 
-function InitPlayer(scaleX, scaleY)
+function InitPlayer(scaleX, scaleY, goal, goalx, goaly)
     local playerWidth = 32  -- actual number of pixels wide for each sprite in the sprite sheet
     local playerHeight = 32 -- actual number of pixels high for each sprite in the sprite sheet
+
     Props.scaleX = scaleX
     Props.scaleY = scaleY
     Props.width = playerWidth * scaleX
@@ -134,7 +188,20 @@ function InitPlayer(scaleX, scaleY)
     Props.collider:setFixedRotation(true)
     Props.collider:setPreSolve(preSolve)
     Props.image = love.graphics.newImage(Props.imagePath)
-    Props.quads = spritesheet.SpriteSheetToQuads(Props.image, playerWidth, playerHeight)
+    Props.grid = spritesheet.NewAnim8Grid(Props.image, playerWidth, playerHeight)
+
+    Props.animations = {}
+    Props.animations.walk = Anim8.newAnimation(Props.grid('1-6', 1), 0.1)
+    Props.animations.idle = Anim8.newAnimation(Props.grid('1-4', 2), 0.2)
+    Props.animations.jump = Anim8.newAnimation(Props.grid('1-2', 3), 0.2, function() resetAnim() end)
+    Props.animations.hurt = Anim8.newAnimation(Props.grid('1-2', 4), 0.2, function() resetAnim() end)
+    Props.animations.ded = Anim8.newAnimation(Props.grid('1-2', 5), 0.2, 'pauseAtEnd')
+    Props.currentAnim8 = Props.animations.walk
+
+    Props.goal = goal
+    Props.goalx = goalx
+    Props.goaly = goaly
+
     Face(RIGHT)
 
     if GameMap.layers[PLAYER_START] then
