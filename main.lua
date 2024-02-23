@@ -10,6 +10,9 @@ LAYER_FOREGROUND = 'Foreground'
 TILE_SIZE = 32
 PLAYER_SCALE = 1.9
 
+local logoDelay = 3
+local logoTimer = logoDelay
+
 -- Initialize variables
 local player = require('player')
 local projectiles = require('projectiles')
@@ -63,6 +66,8 @@ function love.load(args)
 end
 
 function love.update(dt)
+    if logoTimer > 0 then logoTimer = logoTimer - dt end
+
     World:update(dt)
     enemy.UpdateEnemies(dt)
     player.UpdatePlayer(dt)
@@ -113,10 +118,20 @@ function love.draw()
 
     love.graphics.print("HP: " .. player.Props.hp, 10, 10)
     love.graphics.print("GIL: " .. player.Props.gil, 10, 30)
-
+    love.graphics.print("Arrow keys: move" , 10, 100)
+    love.graphics.print("Left control: shoot" , 10, 120)
+    love.graphics.print("Space: jump" , 10, 140)
+    love.graphics.print("Goal: get the money and run" , 10, 170)
+    
     if player.Props.win then
         love.graphics.print("WIN", 300, 300)
     elseif player.Props.dead then
         love.graphics.print("DED", 300, 300)
+    end
+
+    if logoTimer > 0 then
+        love.graphics.draw(
+            love.graphics.newImage('sprites/logo.png'),
+            100, 0, 0, 0.5, 0.5)
     end
 end
