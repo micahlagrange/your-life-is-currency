@@ -98,7 +98,10 @@ end
 
 local function hurt()
     local ec = Props.collider:getEnterCollisionData('Enemy')
-    ec.collider:getObject():attak(Props)
+    local hurt = false
+    hurt = ec.collider:getObject():attak(Props)
+    if hurt == false then return end
+
     if Props.currentAnim8 == Props.animations.hurt then return end
     print('oof')
     Props.currentAnim8 = Props.animations.hurt

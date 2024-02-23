@@ -47,15 +47,20 @@ function Enemy:new(x, y, obj)
 end
 
 function Enemy:attak(player)
+    if self.frozen then return false end
+
     if player.x > self.x then
         self.facing = RIGHT
     else
         self.facing = LEFT
     end
+
     self.currentAnim8 = self.animations.attac
+    return true
 end
 
 function Enemy:resetAnim()
+    print('resetted')
     self.currentAnim8 = self.animations.idle
 end
 
@@ -73,13 +78,15 @@ function Enemy:freeze()
     self.currentAnim8 = self.animations.frozen
 end
 
-function Enemy:hit()
+function Enemy:hit(isBullet)
     if self.frozen then
         self.currentAnim8 = self.animations.ded
         self.dead = true
         self.collider:setCollisionClass('Ghost')
     else
-        self.frozen = true
+        if isBullet then
+            self.frozen = true
+        end
     end
 end
 
@@ -101,8 +108,10 @@ end
 
 function Enemy:checkCollision()
     if self.collider:enter('Bullet') then
-        self:hit()
+        self:hit(true)
         self:freeze()
+    elseif self.collider:enter('Player') then
+        self:hit(false)
     end
 end
 
@@ -161,7 +170,7 @@ function Enemy:update(dt)
     self:chooseConstantAnimation(px)
     self.currentAnim8:update(dt)
 
-    if self.dead then return end
+    if self.dead or self.frozen then return end
 
     -- back and forth
     self.flipTimer = self.flipTimer - dt
