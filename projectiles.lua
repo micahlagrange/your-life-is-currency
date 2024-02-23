@@ -144,7 +144,6 @@ end
 
 function DrawBullets()
     -- Draw bullets (you can replace this with your actual bullet drawing code)
-    -- Set bullet color to red
     love.graphics.setColor(1, 1, 1)
     for _, bulSpikes in pairs({ bullets, icePlatforms }) do
         for _, bullet in ipairs(bulSpikes) do

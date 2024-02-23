@@ -1,11 +1,5 @@
 love.graphics.setDefaultFilter("nearest", "nearest")
 
--- Initialize variables
-local player = require('player')
-local projectiles = require('projectiles')
-local walls = require('walls')
-local pickable = require('pickable')
-
 LEFT = 0
 RIGHT = 1
 GRAVITY = 1600
@@ -13,6 +7,15 @@ GRAVITY = 1600
 LAYER_BG = 'Background'
 LAYER_PLAYER = 'Player'
 LAYER_FOREGROUND = 'Foreground'
+TILE_SIZE = 32
+PLAYER_SCALE = 1.9
+
+-- Initialize variables
+local player = require('player')
+local projectiles = require('projectiles')
+local walls = require('walls')
+local pickable = require('pickable')
+local enemy = require('enemy')
 
 function love.load(args)
     -- load dependencies
@@ -30,6 +33,7 @@ function love.load(args)
 
     World:addCollisionClass('Platform')
     World:addCollisionClass('Pickable')
+    World:addCollisionClass('Enemy')
     World:addCollisionClass('Wall')
     World:addCollisionClass('Bullet', { ignores = { 'Platform' } })
     World:addCollisionClass('Player', { ignores = { 'Bullet' } })
@@ -43,19 +47,20 @@ function love.load(args)
     -- Set the player's initial position at the middle of the screen
     player.Props.x = love.graphics.getWidth() / 2
     player.Props.y = love.graphics.getHeight() / 3
-    player.InitPlayer(1.9, 1.9)
+    player.InitPlayer(PLAYER_SCALE, PLAYER_SCALE)
 
     -- make walls and platforms
     walls.GenerateWalls()
     walls.GeneratePlatforms()
     pickable.GeneratePickables()
+    enemy.GenerateEnemies()
 
     SFX = require('audio')
-
 end
 
 function love.update(dt)
     World:update(dt)
+    enemy.UpdateEnemies(dt)
     player.Move(dt)
     player.Jump()
     projectiles.Shoot(dt,
@@ -89,8 +94,9 @@ function love.draw()
     GameMap:drawLayer(GameMap.layers[LAYER_BG])
     GameMap:drawLayer(GameMap.layers[LAYER_PLAYER])
 
-    -- World:draw()
+    World:draw()
     -- Draw the player
+    enemy.DrawEnemies()
     player.Draw()
     projectiles.DrawBullets()
 

@@ -9,8 +9,8 @@ return {
   height = 130,
   tilewidth = 32,
   tileheight = 32,
-  nextlayerid = 10,
-  nextobjectid = 92,
+  nextlayerid = 11,
+  nextobjectid = 100,
   properties = {},
   tilesets = {
     {
@@ -916,6 +916,19 @@ return {
           rotation = 0,
           visible = true,
           properties = {}
+        },
+        {
+          id = 97,
+          name = "GOAL",
+          type = "",
+          shape = "rectangle",
+          x = 2560,
+          y = 1152,
+          width = 96,
+          height = 96,
+          rotation = 0,
+          visible = true,
+          properties = {}
         }
       }
     },
@@ -938,8 +951,8 @@ return {
           name = "start",
           type = "",
           shape = "point",
-          x = 2592,
-          y = 1408,
+          x = 1824,
+          y = 1056,
           width = 0,
           height = 0,
           rotation = 0,
@@ -982,6 +995,61 @@ return {
           shape = "point",
           x = 2608.67,
           y = 1588.67,
+          width = 0,
+          height = 0,
+          rotation = 0,
+          visible = true,
+          properties = {}
+        }
+      }
+    },
+    {
+      type = "objectgroup",
+      draworder = "topdown",
+      id = 10,
+      name = "Enemy",
+      class = "",
+      visible = true,
+      opacity = 1,
+      offsetx = 0,
+      offsety = 0,
+      parallaxx = 1,
+      parallaxy = 1,
+      properties = {},
+      objects = {
+        {
+          id = 96,
+          name = "enemy",
+          type = "",
+          shape = "point",
+          x = 1344,
+          y = 1344,
+          width = 0,
+          height = 0,
+          rotation = 0,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 98,
+          name = "enemy",
+          type = "",
+          shape = "point",
+          x = 1984,
+          y = 1184,
+          width = 0,
+          height = 0,
+          rotation = 0,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 99,
+          name = "enemy",
+          type = "",
+          shape = "point",
+          x = 1632,
+          y = 1184,
           width = 0,
           height = 0,
           rotation = 0,

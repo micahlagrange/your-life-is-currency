@@ -89,7 +89,7 @@ function Move()
         Face(LEFT)
     end
 
-    -- Update player position based on deltas
+    -- Update player position based on collider
     Props.x, Props.y = Props.collider:getX(), Props.collider:getY()
 
     if Props.collider:enter('Pickable') then
