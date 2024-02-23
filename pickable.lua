@@ -10,7 +10,7 @@ local cleanDelay = 20
 local cleanTimer = cleanDelay
 local theWastelandOfDeadGarbage = -9999
 
-local the3DPyramidThingImage = love.graphics.newImage('sprites/pickup1.png')
+local the3DPyramidThingImage = love.graphics.newImage('sprites/cash.png')
 
 local function findIndexForPickableID(name)
     --return 0 if none found
