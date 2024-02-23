@@ -80,6 +80,7 @@ end
 
 function Enemy:hit(isBullet)
     if self.frozen then
+        -- player or bullet kills
         self.currentAnim8 = self.animations.ded
         self.dead = true
         self.collider:setCollisionClass('Ghost')
