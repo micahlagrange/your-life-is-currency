@@ -1,8 +1,6 @@
-module('enemy', package.seeall)
-
 local spritesheet = require('spritesheet')
+local object = require('libs.classic')
 
-OBJECT_LAYER_ENEMIES = 'Enemy'
 ENEMY_SPEED = 8000
 ENEMY_SCALE = 1.9
 MAX_ENEMY_SPEED = 100
@@ -11,42 +9,45 @@ local flipDelay = 2
 local walkDelay = 2
 local enemies = {}
 
-Enemy = {
-    frozen = false,
-    height = TILE_SIZE * ENEMY_SCALE,
-    width = TILE_SIZE * ENEMY_SCALE,
-    facing = LEFT
-}
-function Enemy:new(x, y, obj)
-    obj = obj or {}
-    setmetatable(obj, self)
-    self.__index = self
+-- Enemy = {
+--     frozen = false,
+--     height = TILE_SIZE * ENEMY_SCALE,
+--     width = TILE_SIZE * ENEMY_SCALE,
+--     facing = LEFT
+-- }
 
-    obj.image = love.graphics.newImage('sprites/fireguy-anims.png')
-    obj.grid = spritesheet.NewAnim8Grid(obj.image, TILE_SIZE, TILE_SIZE)
-    obj.animations = {}
-    obj.animations.idle = Anim8.newAnimation(obj.grid('1-6', 1), 0.2)
-    obj.animations.walk = Anim8.newAnimation(obj.grid('1-4', 2), 0.2)
-    obj.animations.attac = Anim8.newAnimation(obj.grid('1-5', 3), 0.1, function() obj:resetAnim() end)
-    obj.animations.frozen = Anim8.newAnimation(obj.grid('1-1', 4), 0.5, 'pauseAtEnd')
-    obj.animations.ded = Anim8.newAnimation(obj.grid('2-3', 4), 0.3, 'pauseAtEnd')
-    obj.currentAnim8 = obj.animations.walk
+local Enemy = {} -- module
+local enemy = object:extend()
 
-    obj.x = x
-    obj.y = y
-    obj.scaleX, obj.scaleY = ENEMY_SCALE, ENEMY_SCALE
-    obj.w = TILE_SIZE * ENEMY_SCALE
-    obj.h = TILE_SIZE * ENEMY_SCALE
-    obj.collider = obj:newCollider()
 
-    obj.flipTimer = flipDelay
-    obj.walkTimer = walkDelay
-    obj.resting = false
-
-    return obj
+function Enemy.New(entity)
+    return enemy(entity)
 end
 
-function Enemy:attak(player)
+function enemy:new(entity)
+    self.image = love.graphics.newImage('sprites/fireguy-anims.png')
+    self.grid = spritesheet.NewAnim8Grid(self.image, TILE_SIZE, TILE_SIZE)
+    self.animations = {}
+    self.animations.idle = Anim8.newAnimation(self.grid('1-6', 1), 0.2)
+    self.animations.walk = Anim8.newAnimation(self.grid('1-4', 2), 0.2)
+    self.animations.attac = Anim8.newAnimation(self.grid('1-5', 3), 0.1, function() self:resetAnim() end)
+    self.animations.frozen = Anim8.newAnimation(self.grid('1-1', 4), 0.5, 'pauseAtEnd')
+    self.animations.ded = Anim8.newAnimation(self.grid('2-3', 4), 0.3, 'pauseAtEnd')
+    self.currentAnim8 = self.animations.walk
+
+    self.x = entity.x
+    self.y = entity.y
+    self.scaleX, self.scaleY = ENEMY_SCALE, ENEMY_SCALE
+    self.width = TILE_SIZE * ENEMY_SCALE
+    self.height = TILE_SIZE * ENEMY_SCALE
+    self.collider = self:newCollider()
+
+    self.flipTimer = flipDelay
+    self.walkTimer = walkDelay
+    self.resting = false
+end
+
+function enemy:attak(player)
     if self.frozen then return false end
 
     if player.x > self.x then
@@ -59,12 +60,12 @@ function Enemy:attak(player)
     return true
 end
 
-function Enemy:resetAnim()
+function enemy:resetAnim()
     print('resetted')
     self.currentAnim8 = self.animations.idle
 end
 
-function Enemy:flipFacing()
+function enemy:flipFacing()
     if self.facing == RIGHT then
         self.facing = LEFT
     elseif self.facing == LEFT then
@@ -72,18 +73,18 @@ function Enemy:flipFacing()
     end
 end
 
-function Enemy:freeze()
+function enemy:freeze()
     if self.dead then return end
 
     self.currentAnim8 = self.animations.frozen
 end
 
-function Enemy:hit(isBullet)
+function enemy:hit(isBullet)
     if self.frozen then
         -- player or bullet kills
         self.currentAnim8 = self.animations.ded
         self.dead = true
-        self.collider:setCollisionClass('Ghost')
+        self.collider:setCollisionClass(Colliders.GHOST)
     else
         if isBullet then
             self.frozen = true
@@ -91,15 +92,13 @@ function Enemy:hit(isBullet)
     end
 end
 
-function Enemy:newCollider()
-    local collider = World:newBSGRectangleCollider(
+function enemy:newCollider()
+    local collider = World:newCircleCollider(
         self.x,
         self.y,
-        self.w,
-        self.h,
-        15 -- enemies be rounder
+        self.width / 2
     )
-    collider:setCollisionClass('Enemy')
+    collider:setCollisionClass(Colliders.ENEMY)
     collider:setObject(self)
     collider:setFixedRotation(true)
     collider:setX(self.x)
@@ -107,16 +106,16 @@ function Enemy:newCollider()
     return collider
 end
 
-function Enemy:checkCollision()
-    if self.collider:enter('Bullet') then
+function enemy:checkCollision()
+    if self.collider:enter(Colliders.BULLETS) then
         self:hit(true)
         self:freeze()
-    elseif self.collider:enter('Player') then
+    elseif self.collider:enter(Colliders.PLAYER) then
         self:hit(false)
     end
 end
 
-function Enemy:draw()
+function enemy:draw()
     local scaleX
     local adjustedX
 
@@ -140,7 +139,7 @@ function Enemy:draw()
         self.scaleY)
 end
 
-function Enemy:restOrWalk()
+function enemy:restOrWalk()
     if self.resting == true then
         self.resting = false
     else
@@ -149,7 +148,7 @@ function Enemy:restOrWalk()
     self.walkTimer = walkDelay
 end
 
-function Enemy:chooseConstantAnimation(velocity)
+function enemy:chooseConstantAnimation(velocity)
     if self.dead then return end
 
     if self.currentAnim8 ~= self.animations.walk
@@ -163,7 +162,7 @@ function Enemy:chooseConstantAnimation(velocity)
     end
 end
 
-function Enemy:update(dt)
+function enemy:update(dt)
     self:checkCollision()
 
     local px = self.collider:getLinearVelocity()
@@ -199,25 +198,27 @@ function Enemy:update(dt)
     self.x, self.y = self.collider:getX(), self.collider:getY()
 end
 
-function GenerateEnemies()
-    if GameMap.layers[OBJECT_LAYER_ENEMIES] then
-        for i, obj in pairs(GameMap.layers[OBJECT_LAYER_ENEMIES].objects) do
-            table.insert(enemies, Enemy:new(obj.x, obj.y))
-        end
-        for i, obj in ipairs(enemies) do
-            print('new enemy ', obj.x, 'x', obj.y)
-        end
-    end
-end
+-- function Enemy.GenerateEnemies()
+--     if GameMap.layers[OBJECT_LAYER_ENEMIES] then
+--         for i, obj in pairs(GameMap.layers[OBJECT_LAYER_ENEMIES].objects) do
+--             table.insert(enemies, enemy:new(obj.x, obj.y))
+--         end
+--         for i, obj in ipairs(enemies) do
+--             print('new enemy ', obj.x, 'x', obj.y)
+--         end
+--     end
+-- end
 
-function DrawEnemies()
+function Enemy.DrawEnemies()
     for _, e in ipairs(enemies) do
         e:draw()
     end
 end
 
-function UpdateEnemies(dt)
+function Enemy.UpdateEnemies(dt)
     for _, e in ipairs(enemies) do
         e:update(dt)
     end
 end
+
+return Enemy

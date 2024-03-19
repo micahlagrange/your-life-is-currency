@@ -33,7 +33,7 @@ function Bullet.new(x, y, direction)
         self.width + 10,
         self.height,
         0)
-    self.collider:setCollisionClass('Bullet')
+    self.collider:setCollisionClass(Colliders.BULLETS)
     self.collider:setGravityScale(0)
     self.collider:setFixedRotation(true)
     self.collider:setObject(self)
@@ -41,11 +41,11 @@ function Bullet.new(x, y, direction)
 end
 
 local function checkCollisionWithWall(bullet, idx)
-    if bullet.collider:enter('Wall') then
+    if bullet.collider:enter(Colliders.GROUND) then
         print(bullet.collider, ' hit a wall!')
         bullet.state = 'stuck'
         bullet.collider:setType('static')
-        bullet.collider:setCollisionClass('Platform')
+        bullet.collider:setCollisionClass(Colliders.PLATFORMS)
         bullet.meltTimer = meltDelay
         SFX.IceSpikeLand:play()
     end
@@ -114,7 +114,7 @@ function DeleteBullet(bullet, idx)
     local trackingTable = bullets
 
     table.remove(trackingTable, idx)
-    bullet.collider:setCollisionClass('Ghost')
+    bullet.collider:setCollisionClass(Colliders.GHOST)
     bullet.x = theWastelandOfDeadBullets
     bullet.y = theWastelandOfDeadBullets
     pcall(function()
@@ -155,6 +155,11 @@ function DrawBullets()
                 bullet.x - bullet.width / 2,
                 bullet.y - bullet.height / 2,
                 0)
+            if DEBUG then
+                love.graphics.setColor(DebugTextColor())
+                love.graphics.print(bullet.x .. "\n" .. bullet.y, bullet.x, bullet.y)
+                love.graphics.setColor(1, 1, 1)
+            end
         end
     end
 end

@@ -1,7 +1,7 @@
 module('player', package.seeall)
 
 local spritesheet = require('spritesheet')
-local pickable = require('pickable')
+local Pickable = require('src.pickable')
 
 -- Initialize player variables
 Props = {
@@ -27,23 +27,23 @@ Props = {
 }
 
 -- Set player jump strength (adjust as needed)
-PLAYER_SPEED = 8000
-JUMP_STRENGTH = 4900
-MAX_SPEED = 600
+PLAYER_SPEED = 6000
+JUMP_STRENGTH = 1900
+MAX_SPEED = 300
 PLAYER_START = 'PlayerStart'
 WIN_CONDITION = 3
 
 local function preSolve(playerc, wallc, contact)
-    if playerc.collision_class == 'Player'
+    if playerc.collision_class == Colliders.PLAYER
         and
-        wallc.collision_class == 'Platform'
+        wallc.collision_class == Colliders.PLATFORMS
     then
         local wallObj = wallc:getObject()
         local px, py = playerc:getPosition()
         local pw, ph = Props.width, Props.height
         local tx, ty = wallc:getPosition()
-        local tw, th = wallObj.width, wallObj.height
-        if py + ph / 2 > ty - th / 2 then
+        local th = TILE_SIZE
+        if py > ty - (th / 2) then
             contact:setEnabled(false)
         else
             Props.onGround = true
@@ -52,6 +52,7 @@ local function preSolve(playerc, wallc, contact)
 end
 
 function Draw()
+    local px, py = Props.collider:getPosition()
     local scaleX
     if Props.facing == RIGHT then
         scaleX = Props.scaleX
@@ -69,6 +70,11 @@ function Draw()
         0,
         scaleX,
         Props.scaleY)
+    if DEBUG then
+        love.graphics.setColor(DebugTextColor())
+        love.graphics.print(px .. "\n" .. py, px - 40, py - 40)
+        love.graphics.setColor(1, 1, 1)
+    end
 end
 
 function Face(direction)
@@ -122,7 +128,7 @@ function UpdatePlayer(dt)
     if Props.dead or Props.win then return end
 
     -- damage
-    if Props.collider:enter('Enemy') then
+    if Props.collider:enter(Colliders.ENEMY) then
         hurt()
     end
 
@@ -138,26 +144,23 @@ function UpdatePlayer(dt)
     -- Update player position based on collider
     Props.x, Props.y = Props.collider:getX(), Props.collider:getY()
 
-    if Props.collider:enter('Pickable') then
-        local collided = Props.collider:getEnterCollisionData('Pickable')
+    if Props.collider:enter(Colliders.CONSUMABLE) then
+        local collided = Props.collider:getEnterCollisionData(Colliders.CONSUMABLE)
         local pickup = collided.collider
-        pickable.Pickup(pickup)
+        Pickable.Pickup(pickup)
         if Props.gil >= WIN_CONDITION then
-            print(Props.goal:getX())
-            Props.goal:setX(Props.goalx)
-            Props.goal:setY(Props.goaly)
-            print(Props.goal:getX())
+            Props.goal:setOpen() -- open the door
         end
     end
 
-    if Props.collider:enter('END') then
+    if Props.collider:enter(Colliders.GOAL) then
         Props.win = true
     end
 end
 
 function Jump()
-    if Props.collider:enter('Wall') then
-        local collided = Props.collider:getEnterCollisionData('Wall')
+    if Props.collider:enter(Colliders.GROUND) then
+        local collided = Props.collider:getEnterCollisionData(Colliders.GROUND)
         local platform = collided.collider
 
         if Props.y + Props.height / 2 < platform:getY() then
@@ -172,7 +175,7 @@ function Jump()
     end
 end
 
-function InitPlayer(scaleX, scaleY, goal, goalx, goaly)
+function InitPlayer(scaleX, scaleY, goal, startX, startY)
     local playerWidth = 32  -- actual number of pixels wide for each sprite in the sprite sheet
     local playerHeight = 32 -- actual number of pixels high for each sprite in the sprite sheet
 
@@ -184,10 +187,11 @@ function InitPlayer(scaleX, scaleY, goal, goalx, goaly)
     Props.collider = World:newBSGRectangleCollider(
         player.Props.x,
         player.Props.y,
-        player.Props.width,
+        player.Props.width / 2,
         player.Props.height,
-        5)
-    Props.collider:setCollisionClass('Player')
+        10
+    )
+    Props.collider:setCollisionClass(Colliders.PLAYER)
     Props.collider:setFixedRotation(true)
     Props.collider:setPreSolve(preSolve)
     Props.image = love.graphics.newImage(Props.imagePath)
@@ -202,19 +206,13 @@ function InitPlayer(scaleX, scaleY, goal, goalx, goaly)
     Props.currentAnim8 = Props.animations.walk
 
     Props.goal = goal
-    Props.goalx = goalx
-    Props.goaly = goaly
 
     Face(RIGHT)
 
-    if GameMap.layers[PLAYER_START] then
-        for _, obj in pairs(GameMap.layers[PLAYER_START].objects) do
-            Props.x = obj.x
-            Props.y = obj.y
-            Props.collider:setX(obj.x)
-            Props.collider:setY(obj.y)
-            print('start at ', Props.x, Props.y)
-            return
-        end
-    end
+    Props.x = startX
+    Props.y = startY
+    Props.collider:setX(Props.x)
+    Props.collider:setY(Props.y)
+    Props.initialized = true
+    print('start at ', Props.x, Props.y)
 end

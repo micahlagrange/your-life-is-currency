@@ -1,5 +1,9 @@
 love.graphics.setDefaultFilter("nearest", "nearest")
 
+require('src.constants')
+
+DEBUG = false
+
 LEFT = 0
 RIGHT = 1
 GRAVITY = 1600
@@ -16,62 +20,65 @@ local logoTimer = logoDelay
 -- Initialize variables
 local player = require('player')
 local projectiles = require('projectiles')
-local walls = require('walls')
-local pickable = require('pickable')
-local enemy = require('enemy')
+local Layer = require('src.drawing.layer')
+local Pickable = require('src.pickable')
+local Enemy = require('enemy')
+local collision = require('src.collision')
+local GameObjects = require('src.system.gameobjects')
+local Exit = require('src.exit')
 
-function love.load(args)
+-- library code
+local ldtk = require('libs.ldtk')
+local inspect = require('libs.inspect')
+local wf = require('libs/windfield')
+World = wf.newWorld(0, GRAVITY)
+
+-- vars
+
+local ldtkPath = 'tilemaps/ldtk/drakeshot.ldtk'
+
+function love.load()
+    ldtk:load(ldtkPath)
+    ldtk:setFlipped(true)
     -- load dependencies
     -- submodule Simple-Tiled-Implementation
     local hump = require('libs/camera')
-    local sti = require('libs/sti')
-    local wf = require('libs/windfield')
     Anim8 = require('libs/anim8')
 
     -- game maps/tiles
-    GameMap = sti('tilemaps/toGoUpGoDown.lua')
-    -- GameMap = sti('tilemaps/pipes.lu.lua')
     Camera = hump()
     Camera:zoomTo(2)
-    World = wf.newWorld(0, GRAVITY)
 
-    World:addCollisionClass('Platform')
-    World:addCollisionClass('Pickable')
-    World:addCollisionClass('Enemy')
-    World:addCollisionClass('Wall')
-    World:addCollisionClass('Bullet', { ignores = { 'Platform' } })
-    World:addCollisionClass('Player', { ignores = { 'Bullet' } })
-    World:addCollisionClass('Ghost', {
+    World:addCollisionClass(Colliders.PLATFORMS)
+    World:addCollisionClass(Colliders.CONSUMABLE)
+    World:addCollisionClass(Colliders.ENEMY)
+    World:addCollisionClass(Colliders.GROUND)
+    World:addCollisionClass(Colliders.BULLETS, { ignores = { Colliders.PLATFORMS } })
+    World:addCollisionClass(Colliders.PLAYER, { ignores = { Colliders.BULLETS } })
+    World:addCollisionClass(Colliders.GHOST, {
         ignores = {
-            'Platform',
-            'Player',
-            'Bullet' }
+            Colliders.CONSUMABLE,
+            Colliders.ENEMY,
+            Colliders.GROUND,
+            Colliders.PLATFORMS,
+            Colliders.BULLETS,
+            Colliders.PLAYER }
     })
-    World:addCollisionClass('END')
-
-    local goal, goalx, goaly = walls.GenerateGoal()
-    -- Set the player's initial position at the middle of the screen
-    player.Props.x = love.graphics.getWidth() / 2
-    player.Props.y = love.graphics.getHeight() / 3
-    player.InitPlayer(PLAYER_SCALE, PLAYER_SCALE, goal, goalx, goaly)
-
-    -- make walls and platforms
-    walls.GenerateWalls()
-    walls.GeneratePlatforms()
-    pickable.GeneratePickables()
-    enemy.GenerateEnemies()
+    World:addCollisionClass(Colliders.GOAL)
 
     SFX = require('audio')
     SFX.DrWeeb:setLooping(true)
     SFX.DrWeeb:play()
+
+    ldtk:level('Level_0')
 end
 
 function love.update(dt)
     if logoTimer > 0 then logoTimer = logoTimer - dt end
 
     World:update(dt)
-    enemy.UpdateEnemies(dt)
     player.UpdatePlayer(dt)
+    GameObjects.update_all(dt)
     player.Jump()
     projectiles.Shoot(dt,
         player.Props.x,
@@ -85,9 +92,6 @@ function love.update(dt)
     Camera:lookAt(
         player.Props.x + player.Props.width / 2,
         player.Props.y - player.Props.height / 2)
-
-    -- pickables
-    pickable.Update(dt)
 end
 
 function love.draw()
@@ -101,29 +105,29 @@ function love.draw()
     Camera:attach()
     -- reset color, Draw the tilemap
     love.graphics.setColor(1, 1, 1)
-    GameMap:drawLayer(GameMap.layers[LAYER_BG])
-    GameMap:drawLayer(GameMap.layers[LAYER_PLAYER])
+    GameObjects.draw_all()
 
-    -- World:draw()
+    if DEBUG then World:draw() end
+
     -- Draw the player
-    enemy.DrawEnemies()
+    -- Enemy.DrawEnemies()
     player.Draw()
     projectiles.DrawBullets()
 
     love.graphics.setColor(1, 1, 1)
-    GameMap:drawLayer(GameMap.layers[LAYER_FOREGROUND])
 
     -- pickable
-    pickable.Draw()
+    -- Pickable.Draw()
     Camera:detach()
 
     love.graphics.print("HP: " .. player.Props.hp, 10, 10)
     love.graphics.print("GIL: " .. player.Props.gil, 10, 30)
-    love.graphics.print("Arrow keys: move" , 10, 100)
-    love.graphics.print("Left control: shoot" , 10, 120)
-    love.graphics.print("Space: jump" , 10, 140)
-    love.graphics.print("Goal: get the money and run" , 10, 170)
-    
+    love.graphics.print("Arrow keys: move", 10, 100)
+    love.graphics.print("Left control: shoot", 10, 120)
+    love.graphics.print("Space: jump", 10, 140)
+    love.graphics.print("Goal: get the money and run", 10, 170)
+    local logo = love.graphics.newImage('sprites/logo.png')
+
     if player.Props.win then
         love.graphics.print("WIN", 300, 300)
     elseif player.Props.dead then
@@ -131,8 +135,61 @@ function love.draw()
     end
 
     if logoTimer > 0 then
+        local sx = love.graphics.getWidth() / logo:getWidth()
+        local sy = love.graphics.getHeight() / logo:getHeight()
+
         love.graphics.draw(
-            love.graphics.newImage('sprites/logo.png'),
-            100, 0, 0, 0.5, 0.5)
+            logo,
+            0, 0, 0, sx, sy)
     end
+end
+
+function ldtk.onLayer(layer)
+    -- Here we treated the layer as an object and added it to the table we use to draw.
+    -- Generally, you would create a new object and use that object to draw the layer.
+    GameObjects.add(Layer(layer)) --adding layer to the table we use to draw
+end
+
+local playerStartX, playerStartY
+local goal
+
+function ldtk.onEntity(entity)
+    print(string.format('entity id:%s x:%s y:%s width:%s height:%s props:%s visible:%s',
+        entity.id, entity.x, entity.y, entity.width, entity.height,
+        inspect(entity.props), tostring(entity.visible)))
+
+    if entity.id == 'Enemy' then
+        local w = Enemy.New(entity)
+        GameObjects.add(w)
+    elseif entity.id == 'Start' then
+        playerStartX, playerStartY = entity.x, entity.y
+        -- GameObjects.add(s)
+    elseif entity.id == 'Exit' then
+        goal = Exit.New(entity)
+        -- GameObjects.add(goal)
+    elseif entity.id == 'Money' then
+        local g = Pickable.New(entity)
+        GameObjects.add(g)
+    end
+
+    if playerStartX and playerStartY and not player.Props.initialized then
+        player.InitPlayer(PLAYER_SCALE, PLAYER_SCALE, goal, playerStartX, playerStartY)
+    end
+end
+
+function ldtk.onLevelLoaded(level)
+    --removing all objects so we have a blank level
+    GameObjects.reset()
+
+    --changing background color to the one defined in LDtk
+    love.graphics.setBackgroundColor(level.backgroundColor)
+
+    --draw a bunch of rectangles
+    collision:new(level, ldtkPath)
+    collision:loadJSON()
+
+    -- platform tiles
+    collision:IntGridToWinfieldRects(collision:findIntGrid('PlatformGrid'), Colliders.PLATFORMS, TILE_SIZE)
+    -- ground tiles
+    collision:IntGridToWinfieldRects(collision:findIntGrid('IntGrid'), Colliders.GROUND, TILE_SIZE)
 end
