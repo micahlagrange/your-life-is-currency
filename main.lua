@@ -1,8 +1,6 @@
-love.graphics.setDefaultFilter("nearest", "nearest")
-
 require('src.constants')
 
-DEBUG = false
+love.graphics.setDefaultFilter("nearest", "nearest")
 
 LEFT = 0
 RIGHT = 1
@@ -14,7 +12,7 @@ LAYER_FOREGROUND = 'Foreground'
 TILE_SIZE = 32
 PLAYER_SCALE = 1.9
 
-local logoDelay = 3
+local logoDelay = DEBUG and 0 or 3
 local logoTimer = logoDelay
 
 -- Initialize variables
@@ -79,7 +77,6 @@ function love.update(dt)
     World:update(dt)
     player.UpdatePlayer(dt)
     GameObjects.update_all(dt)
-    player.Jump()
     projectiles.Shoot(dt,
         player.Props.x,
         player.Props.y - (player.Props.height / 2),
@@ -92,6 +89,16 @@ function love.update(dt)
     Camera:lookAt(
         player.Props.x + player.Props.width / 2,
         player.Props.y - player.Props.height / 2)
+end
+
+function love.keyreleased(key)
+    if key == "escape" then
+        love.event.quit()
+    end
+
+    if key == 'space' then
+        player.Jump()
+    end
 end
 
 function love.draw()
@@ -189,7 +196,7 @@ function ldtk.onLevelLoaded(level)
     collision:loadJSON()
 
     -- platform tiles
-    collision:IntGridToWinfieldRects(collision:findIntGrid('PlatformGrid'), Colliders.PLATFORMS, TILE_SIZE)
+    collision:IntGridToWinfieldRects_Merged(collision:findIntGrid('PlatformGrid'), Colliders.PLATFORMS, TILE_SIZE)
     -- ground tiles
-    collision:IntGridToWinfieldRects(collision:findIntGrid('IntGrid'), Colliders.GROUND, TILE_SIZE)
+    collision:IntGridToWinfieldRects_Merged(collision:findIntGrid('IntGrid'), Colliders.GROUND, TILE_SIZE)
 end

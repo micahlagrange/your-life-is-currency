@@ -138,7 +138,7 @@ function Shoot(dt, x, y, playerFacing, playerDead)
     if love.keyboard.isDown('lctrl') and shootTimer <= 0 then
         -- Spawn a bullet at player's position
         SFX.ShootProjectile:play()
-        SpawnBullet(x, y + 30, playerFacing)
+        SpawnBullet(x, y + 32, playerFacing)
         -- reset timer
         shootTimer = shootDelay
     end

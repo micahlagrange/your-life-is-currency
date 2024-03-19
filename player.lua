@@ -33,20 +33,35 @@ MAX_SPEED = 300
 PLAYER_START = 'PlayerStart'
 WIN_CONDITION = 3
 
-local function preSolve(playerc, wallc, contact)
-    if playerc.collision_class == Colliders.PLAYER
-        and
-        wallc.collision_class == Colliders.PLATFORMS
+local function amFalling()
+    local _, vy = Props.collider:getLinearVelocity()
+    return vy > 0
+end
+
+local function preSolve(playerc, collidedc, contact)
+    if not playerc.collision_class == Colliders.PLAYER then return end
+    if collidedc.collision_class == Colliders.GROUND
     then
-        local wallObj = wallc:getObject()
-        local px, py = playerc:getPosition()
-        local pw, ph = Props.width, Props.height
-        local tx, ty = wallc:getPosition()
+        local ground = collidedc
+        if Props.y + Props.height / 2 < ground:getY() and not amFalling() then
+            Props.onGround = true
+            Props.lastCollided = 'ground'
+        end
+    elseif
+        collidedc.collision_class == Colliders.PLATFORMS
+    then
+        local platformc = collidedc
+        local _, vy = playerc:getLinearVelocity()
+        local _, py = playerc:getPosition()
+        local _, ty = platformc:getPosition()
         local th = TILE_SIZE
         if py > ty - (th / 2) then
             contact:setEnabled(false)
         else
-            Props.onGround = true
+            if vy == 0 then
+                Props.onGround = true
+                Props.lastCollided = 'platform'
+            end
         end
     end
 end
@@ -63,6 +78,7 @@ function Draw()
         scaleX = -Props.scaleX
     end
 
+    if DEBUG then love.graphics.setColor(DebugPlayerColor(Props.lastCollided)) end
     Props.currentAnim8:draw(
         Props.image,
         Props.x - Props.width / 2,
@@ -71,9 +87,11 @@ function Draw()
         scaleX,
         Props.scaleY)
     if DEBUG then
-        love.graphics.setColor(DebugTextColor())
-        love.graphics.print(px .. "\n" .. py, px - 40, py - 40)
-        love.graphics.setColor(1, 1, 1)
+        local onGroundText = ""
+        if Props.onGround then onGroundText = "onGround" end
+        love.graphics.setColor(Colors.DebugText())
+        love.graphics.print(px .. "\n" .. py .. "\n" .. onGroundText, px - 40, py - 40)
+        love.graphics.setColor(Colors.WHITE())
     end
 end
 
@@ -118,9 +136,19 @@ local function hurt()
     end
 end
 
+local function checkInAir()
+    if Props.collider:exit(Colliders.GROUND)
+        or Props.collider:exit(Colliders.PLATFORMS) then
+        return true
+    end
+end
+
 function UpdatePlayer(dt)
     local px = Props.collider:getLinearVelocity()
 
+    if checkInAir() then
+        Props.onGround = false
+    end
     -- anim
     chooseConstantAnimation(px)
     Props.currentAnim8:update(dt)
@@ -159,15 +187,7 @@ function UpdatePlayer(dt)
 end
 
 function Jump()
-    if Props.collider:enter(Colliders.GROUND) then
-        local collided = Props.collider:getEnterCollisionData(Colliders.GROUND)
-        local platform = collided.collider
-
-        if Props.y + Props.height / 2 < platform:getY() then
-            Props.onGround = true
-        end
-    end
-    if love.keyboard.isDown('space') and Props.onGround then
+    if Props.onGround then
         Props.onGround = false
         local vx, vy = Props.collider:getLinearVelocity()
         Props.collider:setLinearVelocity(vx, 0)
@@ -189,7 +209,7 @@ function InitPlayer(scaleX, scaleY, goal, startX, startY)
         player.Props.y,
         player.Props.width / 2,
         player.Props.height,
-        10
+        6
     )
     Props.collider:setCollisionClass(Colliders.PLAYER)
     Props.collider:setFixedRotation(true)

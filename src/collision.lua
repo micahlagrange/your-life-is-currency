@@ -73,10 +73,39 @@ function LDtkParser:IntGridToWinfieldRects(intGrid, colliderType, tileSize)
             local x = (gridX - 1) * tileSize
             local y = (gridY - 1) * tileSize
             if i == 1 then
-                local terrainTile = World:newRectangleCollider(x, y, TILE_SIZE, TILE_SIZE)
+                local terrainTile = World:newRectangleCollider(x, y, tileSize, tileSize)
                 terrainTile:setType('static')
                 terrainTile:setCollisionClass(colliderType)
             end
+        end
+    end
+end
+
+function LDtkParser:IntGridToWinfieldRects_Merged(intGrid, colliderType, tileSize)
+    local grid = intGrid or self.intGrid
+    -- array of arrays of int
+    for gridY, row in ipairs(grid) do
+        local startX = nil
+        local y = (gridY - 1) * tileSize
+        for gridX, i in ipairs(row) do
+            local x = (gridX - 1) * tileSize
+            if i == 1 then
+                if not startX then
+                    startX = x
+                end
+            elseif startX then
+                local terrainTile = World:newRectangleCollider(startX, y, x - startX, tileSize)
+                terrainTile:setType('static')
+                terrainTile:setCollisionClass(colliderType)
+                startX = nil
+            end
+        end
+        -- If the row ends with a sequence of "1"s, create a rectangle for it
+        if startX then
+            local x = #row * tileSize
+            local terrainTile = World:newRectangleCollider(startX, y, x - startX, tileSize)
+            terrainTile:setType('static')
+            terrainTile:setCollisionClass(colliderType)
         end
     end
 end
