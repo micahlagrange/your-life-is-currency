@@ -5,7 +5,7 @@ local bullets = {}
 local icePlatforms = {}
 
 BULLET_SPEED = 600
-local shootDelay = 1  -- Delay in seconds
+local shootDelay = .5 -- Delay in seconds
 local shootTimer = shootDelay
 local cleanDelay = 20 -- Delay in seconds
 local cleanTimer = cleanDelay
@@ -156,7 +156,7 @@ function DrawBullets()
                 bullet.y - bullet.height / 2,
                 0)
             if DEBUG then
-                love.graphics.setColor(DebugTextColor())
+                love.graphics.setColor(Colors.DebugText())
                 love.graphics.print(bullet.x .. "\n" .. bullet.y, bullet.x, bullet.y)
                 love.graphics.setColor(1, 1, 1)
             end

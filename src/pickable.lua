@@ -2,7 +2,6 @@ local object = require('libs.classic')
 
 local INVENTORY = {}
 
-
 local pickups = {}
 local Pickable = {}
 local pickable = object:extend()
@@ -59,8 +58,8 @@ function pickable:draw()
     if self.picked then return end
     love.graphics.draw(
         the3DPyramidThingImage,
-        self.collider:getX(),
-        self.collider:getY(),
+        self.collider:getX() - 16,
+        self.collider:getY() - 16,
         0)
 end
 
@@ -74,16 +73,17 @@ function Pickable.Pickup(collider)
     table.insert(INVENTORY, pickup)
     Pickable.deletePickable(pickup, pickup.pkguid)
     SFX.ItemGet:play()
-    player.Props.gil = player.Props.gil + 1
+    return 1
 end
 
 function pickable:new(entity)
     self.picked = false
     self.pkguid = getUniqueID()
+    self.x, self.y = entity.x, entity.y
     print('  -- generate pickup ', self.pkguid)
     self.collider = World:newRectangleCollider(
-        entity.x,
-        entity.y,
+        self.x,
+        self.y,
         32,
         32)
     self.collider:setType('static')

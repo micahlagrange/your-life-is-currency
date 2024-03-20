@@ -6,9 +6,6 @@ LEFT = 0
 RIGHT = 1
 GRAVITY = 1600
 
-LAYER_BG = 'Background'
-LAYER_PLAYER = 'Player'
-LAYER_FOREGROUND = 'Foreground'
 TILE_SIZE = 32
 PLAYER_SCALE = 1.9
 
@@ -16,7 +13,7 @@ local logoDelay = DEBUG and 0 or 3
 local logoTimer = logoDelay
 
 -- Initialize variables
-local player = require('player')
+local player = require('src.player')
 local projectiles = require('projectiles')
 local Layer = require('src.drawing.layer')
 local Pickable = require('src.pickable')
@@ -24,6 +21,7 @@ local Enemy = require('enemy')
 local collision = require('src.collision')
 local GameObjects = require('src.system.gameobjects')
 local Exit = require('src.exit')
+local timer = require('src.system.timer')
 
 -- library code
 local ldtk = require('libs.ldtk')
@@ -68,36 +66,36 @@ function love.load()
     SFX.DrWeeb:setLooping(true)
     SFX.DrWeeb:play()
 
-    ldtk:level('Level_0')
+    ldtk:level('Level_1')
 end
 
 function love.update(dt)
+    timer.update(dt)
+
     if logoTimer > 0 then logoTimer = logoTimer - dt end
 
     World:update(dt)
     player.UpdatePlayer(dt)
     GameObjects.update_all(dt)
     projectiles.Shoot(dt,
-        player.Props.x,
-        player.Props.y - (player.Props.height / 2),
-        player.Props.facing,
-        player.Props.dead
+        player.x,
+        player.y - (player.height / 2),
+        player.facing,
+        player.dead
     )
+    player.Jump()
+
     projectiles.Update(dt)
 
     -- TODO: lerp cam to player
     Camera:lookAt(
-        player.Props.x + player.Props.width / 2,
-        player.Props.y - player.Props.height / 2)
+        player.x + player.width / 2,
+        player.y - player.height / 2)
 end
 
 function love.keyreleased(key)
     if key == "escape" then
         love.event.quit()
-    end
-
-    if key == 'space' then
-        player.Jump()
     end
 end
 
@@ -127,17 +125,17 @@ function love.draw()
     -- Pickable.Draw()
     Camera:detach()
 
-    love.graphics.print("HP: " .. player.Props.hp, 10, 10)
-    love.graphics.print("GIL: " .. player.Props.gil, 10, 30)
+    love.graphics.print("HP: " .. player.hp, 10, 10)
+    love.graphics.print("GIL: " .. player.gil, 10, 30)
     love.graphics.print("Arrow keys: move", 10, 100)
     love.graphics.print("Left control: shoot", 10, 120)
     love.graphics.print("Space: jump", 10, 140)
     love.graphics.print("Goal: get the money and run", 10, 170)
     local logo = love.graphics.newImage('sprites/logo.png')
 
-    if player.Props.win then
+    if player.win then
         love.graphics.print("WIN", 300, 300)
-    elseif player.Props.dead then
+    elseif player.dead then
         love.graphics.print("DED", 300, 300)
     end
 
@@ -179,7 +177,7 @@ function ldtk.onEntity(entity)
         GameObjects.add(g)
     end
 
-    if playerStartX and playerStartY and not player.Props.initialized then
+    if playerStartX and playerStartY and not player.initialized then
         player.InitPlayer(PLAYER_SCALE, PLAYER_SCALE, goal, playerStartX, playerStartY)
     end
 end

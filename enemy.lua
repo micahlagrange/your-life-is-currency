@@ -29,7 +29,7 @@ function enemy:new(entity)
     self.grid = spritesheet.NewAnim8Grid(self.image, TILE_SIZE, TILE_SIZE)
     self.animations = {}
     self.animations.idle = Anim8.newAnimation(self.grid('1-6', 1), 0.2)
-    self.animations.walk = Anim8.newAnimation(self.grid('1-4', 2), 0.2)
+    self.animations.walk = Anim8.newAnimation(self.grid('1-4', 2), 0.1)
     self.animations.attac = Anim8.newAnimation(self.grid('1-5', 3), 0.1, function() self:resetAnim() end)
     self.animations.frozen = Anim8.newAnimation(self.grid('1-1', 4), 0.5, 'pauseAtEnd')
     self.animations.ded = Anim8.newAnimation(self.grid('2-3', 4), 0.3, 'pauseAtEnd')
@@ -197,17 +197,6 @@ function enemy:update(dt)
     -- Update player position based on collider
     self.x, self.y = self.collider:getX(), self.collider:getY()
 end
-
--- function Enemy.GenerateEnemies()
---     if GameMap.layers[OBJECT_LAYER_ENEMIES] then
---         for i, obj in pairs(GameMap.layers[OBJECT_LAYER_ENEMIES].objects) do
---             table.insert(enemies, enemy:new(obj.x, obj.y))
---         end
---         for i, obj in ipairs(enemies) do
---             print('new enemy ', obj.x, 'x', obj.y)
---         end
---     end
--- end
 
 function Enemy.DrawEnemies()
     for _, e in ipairs(enemies) do
