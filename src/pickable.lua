@@ -1,16 +1,17 @@
-local object = require('libs.classic')
+local object                    = require('libs.classic')
+local money                     = require('src.pickables.money')
+local inspect                   = require('libs.inspect')
 
-local INVENTORY = {}
+local INVENTORY                 = {}
 
-local pickups = {}
-local Pickable = {}
-local pickable = object:extend()
+local pickups                   = {}
+local Pickable                  = {}
+local pickable                  = object:extend()
 
-local cleanDelay = 20
-local cleanTimer = cleanDelay
+local cleanDelay                = 20
+local cleanTimer                = cleanDelay
 local theWastelandOfDeadGarbage = -9999
 
-local the3DPyramidThingImage = love.graphics.newImage('sprites/cash.png')
 
 function Pickable.findIndexForPickableID(name)
     --return 0 if none found
@@ -54,17 +55,17 @@ local function getUniqueID()
     return idcounter
 end
 
-function pickable:draw()
-    if self.picked then return end
-    love.graphics.draw(
-        the3DPyramidThingImage,
-        self.collider:getX() - 16,
-        self.collider:getY() - 16,
-        0)
-end
 
 function pickable:update(dt)
+    self.instance.x = self.x
+    self.instance.y = self.y
+    self.instance:update(dt)
     cleanUpPickables(dt)
+end
+
+function pickable:draw()
+    if self.picked then return end
+    self.instance:draw()
 end
 
 function Pickable.Pickup(collider)
@@ -73,23 +74,29 @@ function Pickable.Pickup(collider)
     table.insert(INVENTORY, pickup)
     Pickable.deletePickable(pickup, pickup.pkguid)
     SFX.ItemGet:play()
-    return 1
+    return pickup.instance
 end
 
 function pickable:new(entity)
     self.picked = false
     self.pkguid = getUniqueID()
-    self.x, self.y = entity.x, entity.y
     print('  -- generate pickup ', self.pkguid)
+    self.x = entity.x
+    self.y = entity.y
     self.collider = World:newRectangleCollider(
-        self.x,
-        self.y,
+        entity.x,
+        entity.y,
         32,
         32)
     self.collider:setType('static')
     self.collider:setCollisionClass(Colliders.CONSUMABLE)
     self.collider:setObject(self)
     self.collider:setGravityScale(0)
+
+    assert(entity.id ~= nil, "Entity id nil: " .. inspect(entity))
+    if entity.id == Items.MONEY then
+        self.instance = money(entity)
+    end
 end
 
 function Pickable.New(entity)

@@ -60,7 +60,8 @@ function love.load()
             Colliders.BULLETS,
             Colliders.PLAYER }
     })
-    World:addCollisionClass(Colliders.GOAL)
+    World:addCollisionClass(Colliders.GOAL, { ignores = { Colliders.PLAYER } }
+    )
 
     SFX = require('audio')
     SFX.DrWeeb:setLooping(true)
@@ -124,9 +125,15 @@ function love.draw()
     -- pickable
     -- Pickable.Draw()
     Camera:detach()
-
+    local items = player.inventory:find(Items.MONEY)
+    local gil = 0
+    if items then
+        for _, i in ipairs(items) do
+            gil = gil + i.value
+        end
+    end
     love.graphics.print("HP: " .. player.hp, 10, 10)
-    love.graphics.print("GIL: " .. player.gil, 10, 30)
+    love.graphics.print("GIL: " .. gil, 10, 30)
     love.graphics.print("Arrow keys: move", 10, 100)
     love.graphics.print("Left control: shoot", 10, 120)
     love.graphics.print("Space: jump", 10, 140)
@@ -169,10 +176,10 @@ function ldtk.onEntity(entity)
     elseif entity.id == 'Start' then
         playerStartX, playerStartY = entity.x, entity.y
         -- GameObjects.add(s)
-    elseif entity.id == 'Exit' then
-        goal = Exit.New(entity)
-        -- GameObjects.add(goal)
-    elseif entity.id == 'Money' then
+    elseif entity.id == Items.EXIT then
+        local goal = Exit.New(entity)
+        GameObjects.add(goal)
+    elseif entity.props[EntityProps.PICKABLE] then
         local g = Pickable.New(entity)
         GameObjects.add(g)
     end

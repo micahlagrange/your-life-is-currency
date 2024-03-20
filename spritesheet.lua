@@ -1,4 +1,4 @@
-module('spritesheet', package.seeall)
+local spritesheet = {}
 
 -- Takes a love.graphics.newImage('somepath') and returns a table of quads
 function SpriteSheetToQuads(spritesheet, spriteWidth, spriteHeight)
@@ -30,7 +30,7 @@ function SpriteSheetToQuads(spritesheet, spriteWidth, spriteHeight)
     return quads
 end
 
-function NewAnim8Grid(spriteSheet, w, h)
+function spritesheet.NewAnim8Grid(spriteSheet, w, h)
     return Anim8.newGrid(
         w,
         h,
@@ -38,3 +38,5 @@ function NewAnim8Grid(spriteSheet, w, h)
         spriteSheet:getHeight()
     )
 end
+
+return spritesheet

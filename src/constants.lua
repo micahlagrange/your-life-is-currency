@@ -27,3 +27,12 @@ Colliders.UI_ELEMENT       = 'UiElement'
 EVENTS                     = {}
 EVENTS.Timer               = {}
 EVENTS.Timer.TIMER_EXPIRED = 'TIMER_EXPIRED'
+
+EntityProps                = {}
+EntityProps.PICKABLE       = 'Pickable'
+EntityProps.VALUE          = 'Value'
+EntityProps.GOAL           = 'Goal'
+
+Items                      = {}
+Items.MONEY                = 'Money'
+Items.EXIT                 = 'Exit'

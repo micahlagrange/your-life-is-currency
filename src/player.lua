@@ -1,6 +1,7 @@
 local spritesheet = require('spritesheet')
 local pickable = require('src.pickable')
 local timer = require('src.system.timer')
+local inventory = require('src.pickables.inventory')
 
 -- Initialize player variables
 player = {
@@ -21,7 +22,7 @@ player = {
     image = nil,
     currentSprite = 1,
     hp = 2,
-    gil = 0,
+    inventory = inventory(),
     dead = false,
     canAccelJump = true,
     jumpTimerExpired = false
@@ -206,14 +207,7 @@ function player.UpdatePlayer(dt)
     if player.collider:enter(Colliders.CONSUMABLE) then
         local collided = player.collider:getEnterCollisionData(Colliders.CONSUMABLE)
         local pickup = collided.collider
-        player.gil = player.gil + pickable.Pickup(pickup)
-        if player.gil >= WIN_CONDITION then
-            player.goal:setOpen() -- open the door
-        end
-    end
-
-    if player.collider:enter(Colliders.GOAL) then
-        player.win = true
+        player.inventory:add(pickable.Pickup(pickup))
     end
 
     -- if player.jumpTimerExpired then player.jumpTimerExpired = false end
@@ -280,6 +274,7 @@ function player.InitPlayer(scaleX, scaleY, goal, startX, startY)
     player.collider:setCollisionClass(Colliders.PLAYER)
     player.collider:setFixedRotation(true)
     player.collider:setPreSolve(preSolve)
+    player.collider:setObject(player)
     player.image = love.graphics.newImage(player.imagePath)
     player.grid = spritesheet.NewAnim8Grid(player.image, playerWidth, playerHeight)
 
