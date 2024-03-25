@@ -39,6 +39,7 @@ FORCE_JUMP_START_SPEED = 300
 WIN_CONDITION = 3
 
 local debugCircle = {}
+local debugCollisionText = ""
 
 local function isFalling(collider)
     local _, vy = collider:getLinearVelocity()
@@ -52,19 +53,18 @@ local function playerBelowPlatform(playercollider, platformcollider)
     return py > ty - th
 end
 
+
 local function feetTouchGround(playercollider, groundcollider)
-    --  return Player.y + Player.height / 2 < groundcollider:getY()
+    -- is the player passing through a one-way platform or above it
     return not playerBelowPlatform(playercollider, groundcollider)
 end
 
 local function preSolve(playerc, collidedc, contact)
+    local nx, ny = contact:getNormal()
+    debugCollisionText = ny
     if not playerc.collision_class == Colliders.PLAYER then return end
     if collidedc.collision_class == Colliders.GROUND then
-        local ground = collidedc
-        if player.jumpStarted and not debugCircle[1] then
-            debugCircle = { player.x, player.y + ground:getY() }
-        end
-        if feetTouchGround(playerc, collidedc) and not isFalling(playerc) then
+        if ny ~= 0 and feetTouchGround(playerc, collidedc) and not isFalling(playerc) then
             player.onGround = true
             player.canAccelJump = true
         end
@@ -115,10 +115,11 @@ function player.Draw()
         local onGroundText = "inAir:" .. (player.onGround and 'false' or 'true')
         local jumpKeyPressed = "jumpKey:" .. (love.keyboard.isDown('space') and 'true' or 'false')
         local jumpExpired = "jumpExpired:" .. (player.jumpTimerExpired and 'true' or 'false')
-        love.graphics.print(jumpKeyPressed .. "  " .. onGroundText .. "  " .. jumpExpired,
+        local debugCollisionText = "collision normal:" .. debugCollisionText
+        love.graphics.print(jumpKeyPressed .. "  " .. onGroundText .. "  " .. jumpExpired .. "\n" .. debugCollisionText,
             px + 32,
             py)
-        love.graphics.setColor(Colors.WHITE())
+        love.graphics.setColor(Colors.RED())
         if debugCircle[1] ~= nil then
             love.graphics.circle('fill', debugCircle[1], debugCircle[2], 3)
         end
@@ -267,7 +268,7 @@ function player.InitPlayer(scaleX, scaleY, goal, startX, startY)
     player.collider = World:newBSGRectangleCollider(
         player.x,
         player.y,
-        player.width / 2,
+        player.width / 1.34,
         player.height,
         6
     )

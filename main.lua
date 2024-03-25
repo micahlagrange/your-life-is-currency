@@ -67,7 +67,7 @@ function love.load()
     SFX.DrWeeb:setLooping(true)
     SFX.DrWeeb:play()
 
-    ldtk:level('Level_1')
+    ldtk:level('Level_0')
 end
 
 function love.update(dt)
@@ -201,7 +201,8 @@ function ldtk.onLevelLoaded(level)
     collision:loadJSON()
 
     -- platform tiles
-    collision:IntGridToWinfieldRects_Merged(collision:findIntGrid('PlatformGrid'), Colliders.PLATFORMS, TILE_SIZE)
+    collision:IntGridToWinfieldRects_Merged(collision:findIntGrid('PlatformGrid'), Colliders.PLATFORMS,
+        TILE_SIZE)
     -- ground tiles
-    collision:IntGridToWinfieldRects_Merged(collision:findIntGrid('IntGrid'), Colliders.GROUND, TILE_SIZE)
+    collision:IntGridToWinfieldRects(collision:findIntGrid('IntGrid'), Colliders.GROUND, TILE_SIZE)
 end

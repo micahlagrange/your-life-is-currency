@@ -1,4 +1,3 @@
-DEBUG            = true
 Colors           = {}
 Colors.WHITE     = function() return 1, 1, 1 end
 Colors.RED       = function() return 1, 0, 0 end
@@ -36,3 +35,5 @@ EntityProps.GOAL           = 'Goal'
 Items                      = {}
 Items.MONEY                = 'Money'
 Items.EXIT                 = 'Exit'
+
+NO_MANS_LAND               = -9999

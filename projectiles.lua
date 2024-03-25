@@ -12,9 +12,6 @@ local cleanTimer = cleanDelay
 local meltDelay = 10
 local image = love.graphics.newImage('sprites/ice-spike-1.png')
 
-local theWastelandOfDeadBullets = -9999
-
-
 -- Define the Projectile class
 Bullet = {}
 Bullet.__index = Bullet
@@ -90,9 +87,9 @@ local function cleanUpBullets(dt)
     cleanTimer = cleanTimer - dt
     if cleanTimer > 0 then return end
 
-    local colliders = World:queryCircleArea(theWastelandOfDeadBullets, theWastelandOfDeadBullets, 300)
+    local colliders = World:queryCircleArea(NO_MANS_LAND, NO_MANS_LAND, 300)
     for _, collider in ipairs(colliders) do
-        print('delete bullet collider ', collider.id)
+        print('delete collider ', collider.id)
         print(pcall(function() collider:destroy() end))
     end
     cleanTimer = cleanDelay
@@ -115,8 +112,8 @@ function DeleteBullet(bullet, idx)
 
     table.remove(trackingTable, idx)
     bullet.collider:setCollisionClass(Colliders.GHOST)
-    bullet.x = theWastelandOfDeadBullets
-    bullet.y = theWastelandOfDeadBullets
+    bullet.x = NO_MANS_LAND
+    bullet.y = NO_MANS_LAND
     pcall(function()
         bullet.collider:setX(bullet.x)
         bullet.collider:setY(bullet.y)

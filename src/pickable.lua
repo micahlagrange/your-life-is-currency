@@ -1,17 +1,15 @@
-local object                    = require('libs.classic')
-local money                     = require('src.pickables.money')
-local inspect                   = require('libs.inspect')
+local object     = require('libs.classic')
+local money      = require('src.pickables.money')
+local inspect    = require('libs.inspect')
 
-local INVENTORY                 = {}
+local INVENTORY  = {}
 
-local pickups                   = {}
-local Pickable                  = {}
-local pickable                  = object:extend()
+local pickups    = {}
+local Pickable   = {}
+local pickable   = object:extend()
 
-local cleanDelay                = 20
-local cleanTimer                = cleanDelay
-local theWastelandOfDeadGarbage = -9999
-
+local cleanDelay = 20
+local cleanTimer = cleanDelay
 
 function Pickable.findIndexForPickableID(name)
     --return 0 if none found
@@ -28,12 +26,12 @@ function Pickable.deletePickable(pickup, name)
     local idx = Pickable.findIndexForPickableID(name)
     if idx > 0 then table.remove(pickups, idx) end
 
-    pickup.x = theWastelandOfDeadGarbage
-    pickup.y = theWastelandOfDeadGarbage
+    pickup.x = NO_MANS_LAND
+    pickup.y = NO_MANS_LAND
     pcall(function()
         pickup.collider:setCollisionClass(Colliders.GHOST)
-        pickup.collider:setX(theWastelandOfDeadGarbage)
-        pickup.collider:setY(theWastelandOfDeadGarbage)
+        pickup.collider:setX(NO_MANS_LAND)
+        pickup.collider:setY(NO_MANS_LAND)
     end)
 end
 
@@ -41,7 +39,7 @@ local function cleanUpPickables(dt)
     cleanTimer = cleanTimer - dt
     if cleanTimer > 0 then return end
 
-    local colliders = World:queryCircleArea(theWastelandOfDeadGarbage, theWastelandOfDeadGarbage, 300)
+    local colliders = World:queryCircleArea(NO_MANS_LAND, NO_MANS_LAND, 300)
     for _, collider in ipairs(colliders) do
         print('delete pickup collider ', collider)
         print(pcall(function() collider:destroy() end))
