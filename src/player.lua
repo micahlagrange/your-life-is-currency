@@ -53,6 +53,8 @@ local function playerBelowPlatform(playercollider, platformcollider)
     return py > ty - th
 end
 
+local function isInPit()
+end
 
 local function feetTouchGround(playercollider, groundcollider)
     -- is the player passing through a one-way platform or above it
@@ -77,6 +79,11 @@ local function preSolve(playerc, collidedc, contact)
                 player.canAccelJump = true
             end
         end
+    end
+
+    -- don't get pushed around by coins
+    if collidedc.collision_class == Colliders.CONSUMABLE then
+        contact:setEnabled(false)
     end
 end
 

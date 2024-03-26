@@ -1,4 +1,6 @@
-DEBUG = false
+FIRST_LEVEL = 'Level_2'
+
+DEBUG = true
 
 function love.conf(t)
     t.title = "Drakeshot"

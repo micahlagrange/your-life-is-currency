@@ -137,6 +137,14 @@ function enemy:draw()
         0,
         scaleX,
         self.scaleY)
+
+    love.graphics.setColor(Colors.RED())
+    local debugText = "\nflip: " .. self.flipTimer
+        .. "\nwalk: " .. self.walkTimer
+        .. "\nresting: " .. (self.resting and 'true' or 'false')
+        .. "\nded: " .. (self.dead and 'true' or 'false')
+
+    love.graphics.print(debugText, self.x, self.y)
 end
 
 function enemy:restOrWalk()

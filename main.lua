@@ -9,6 +9,8 @@ GRAVITY = 1600
 TILE_SIZE = 32
 PLAYER_SCALE = 1.9
 
+local pitDepth = 999999999999999999999
+
 local logoDelay = DEBUG and 0 or 3
 local logoTimer = logoDelay
 
@@ -64,10 +66,10 @@ function love.load()
     )
 
     SFX = require('audio')
-    SFX.DrWeeb:setLooping(true)
-    SFX.DrWeeb:play()
+    -- SFX.DrWeeb:setLooping(true)
+    -- SFX.DrWeeb:play()
 
-    ldtk:level('Level_0')
+    ldtk:level(FIRST_LEVEL)
 end
 
 function love.update(dt)
@@ -109,21 +111,16 @@ function love.draw()
         love.graphics.getHeight())
 
     Camera:attach()
-    -- reset color, Draw the tilemap
-    love.graphics.setColor(1, 1, 1)
-    GameObjects.draw_all()
 
     if DEBUG then World:draw() end
 
-    -- Draw the player
-    -- Enemy.DrawEnemies()
+    love.graphics.setColor(1, 1, 1)
+    GameObjects.draw_all()
     player.Draw()
     projectiles.DrawBullets()
 
     love.graphics.setColor(1, 1, 1)
 
-    -- pickable
-    -- Pickable.Draw()
     Camera:detach()
     local items = player.inventory:find(Items.MONEY)
     local gil = 0
@@ -154,6 +151,10 @@ function love.draw()
             logo,
             0, 0, 0, sx, sy)
     end
+
+    if player.y > pitDepth then
+        player.dead = true
+    end
 end
 
 function ldtk.onLayer(layer)
@@ -182,6 +183,9 @@ function ldtk.onEntity(entity)
     elseif entity.props[EntityProps.PICKABLE] then
         local g = Pickable.New(entity)
         GameObjects.add(g)
+    elseif entity.id == 'PitDepth' then
+        pitDepth = entity.y
+        print('pitDepth', pitDepth)
     end
 
     if playerStartX and playerStartY and not player.initialized then
